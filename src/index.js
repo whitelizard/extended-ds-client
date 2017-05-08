@@ -3,8 +3,11 @@ import maxFreq from 'max-frequency-caller';
 
 const ds = { client: undefined }; // client, changable & exportable
 
-export function init(serverAddress, { tenant = 'demo', frequency = undefined }) {
-  ds.client = deepstream(serverAddress);
+export function init(
+  serverAddress,
+  { tenant = 'demo', frequency = undefined, cb = Function.prototype },
+) {
+  ds.client = deepstream(serverAddress, cb);
   ds.tenant = tenant;
   ds.delay = 1000 / frequency;
 }
