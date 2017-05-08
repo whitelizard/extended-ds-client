@@ -1,0 +1,34 @@
+{
+  "name": "extended-ds-client",
+  "version": "0.1.0",
+  "description": "Extended deepstream client",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "babel src -d index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/whitelizard/extended-ds-client.git"
+  },
+  "author": "Esbjörn Blomquist",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/whitelizard/extended-ds-client/issues"
+  },
+  "homepage": "https://github.com/whitelizard/extended-ds-client#readme",
+  "dependencies": {
+    "deepstream.io-client-js": "^2.1.5",
+    "max-frequency-caller": "^0.1.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-core": "^6.24.1",
+    "babel-eslint": "^7.2.3",
+    "babel-preset-env": "^1.4.0",
+    "eslint": "^3.19.0",
+    "eslint-config-airbnb-base": "^11.1.3",
+    "eslint-plugin-import": "^2.2.0",
+    "eslint-plugin-node": "^4.2.2"
+  }
+}

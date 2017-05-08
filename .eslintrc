@@ -1,0 +1,15 @@
+{
+  "parser": "babel-eslint",
+  "extends": "airbnb-base",
+
+  "rules": {
+    "no-restricted-syntax": [0],
+    "no-mixed-operators": [0]
+  },
+
+  "parserOptions": {
+    "ecmaFeatures": {
+      "experimentalObjectRestSpread": true
+    }
+  },
+}
