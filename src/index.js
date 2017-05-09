@@ -24,17 +24,22 @@ export default class DSClient {
     this.close = this.c.close;
     this.getUid = this.c.getUid;
     this.getConnectionState = this.c.getConnectionState;
+    this.channelFreqs = {};
   }
 
-  setFrequency(freq) {
+  setTotalFrequency(freq) {
     this.maxFreq = new MaxFreq(freq);
   }
 
-  pub(channel, payload) {
-    createDataRecord(this.c, `${this.tenant}/data/${channel}`, Date.now() / 1000, payload);
+  setChannelFrequency(channel, freq) {
+    this.channels[channel] = new MaxFreq(freq);
   }
 
-  pubSave(channel, payload) {
+  pub = (channel, payload) => {
+    createDataRecord(this.c, `${this.tenant}/data/${channel}`, Date.now() / 1000, payload);
+  };
+
+  pubSave = (channel, payload) => {
     try {
       this.pub(channel, payload);
       const listId = `${this.tenant}/history/${channel}`;
@@ -48,14 +53,20 @@ export default class DSClient {
     } catch (err) {
       console.log('Could not create record or update list:', err);
     }
-  }
+  };
 
-  pubFreq(channel, payload) {
-    this.maxFreq(this.pub.bind(this), [channel, payload]);
+  pubFreq(channel, payload, func = this.pub) {
+    if (this.maxFreq) {
+      this.maxFreq(func, [channel, payload]);
+    } else if (this.channelFreqs[channel]) {
+      this.channelFreqs[channel](func, [channel, payload]);
+    } else {
+      throw new Error('No frequency set (total or channel specific)');
+    }
   }
 
   pubFreqSave(channel, payload) {
-    this.maxFreq(this.pubWithHistory.bind(this), [channel, payload]);
+    this.pubFreq(channel, payload, this.pubWithHistory);
   }
 }
 
