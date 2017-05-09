@@ -32,7 +32,7 @@ export default class DSClient {
   }
 
   setChannelFrequency(channel, freq) {
-    this.channels[channel] = new MaxFreq(freq);
+    this.channelFreqs[channel] = new MaxFreq(freq);
   }
 
   pub = (channel, payload) => {

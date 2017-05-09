@@ -19,7 +19,7 @@
   "homepage": "https://github.com/whitelizard/extended-ds-client#readme",
   "dependencies": {
     "deepstream.io-client-js": "^2.1.5",
-    "max-frequency-caller": "^0.1.0"
+    "max-frequency-caller": "^1.0.0"
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",
