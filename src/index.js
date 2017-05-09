@@ -1,61 +1,64 @@
 import deepstream from 'deepstream.io-client-js';
-import maxFreq from 'max-frequency-caller';
+import MaxFreq from 'max-frequency-caller';
 
-const ds = { client: undefined }; // client, changable & exportable
+export const statuses = deepstream.CONSTANTS.CONNECTION_STATE;
 
-export function init(
-  serverAddress,
-  { tenant = 'demo', frequency = undefined, cb = Function.prototype },
-) {
-  ds.client = deepstream(serverAddress, cb);
-  ds.tenant = tenant;
-  ds.delay = 1000 / frequency;
-}
-
-export function login(loginObj, callback) {
-  ds.client.login(loginObj, callback);
-}
-
-function createDataRecord(id, timestamp, payload) {
+export function createDataRecord(client, id, timestamp, payload) {
   try {
-    return ds.client.record.getRecord(id).set({
+    return client.record.getRecord(id).set({
       timestamp,
       payload,
     });
   } catch (err) {
     console.log('Could not create record:', err);
+    return undefined;
   }
 }
 
-export function pub(channel, payload) {
-  createDataRecord(`${ds.tenant}/data/${channel}`, Date.now() / 1000, payload);
-}
+export default class DSClient {
+  constructor(url, options, tenant = 'demo') {
+    this.tenant = tenant;
+    // Create deepstream client object and tunnel its API
+    this.c = deepstream(url, options);
+    this.login = this.c.login;
+    this.close = this.c.close;
+    this.getUid = this.c.getUid;
+    this.getConnectionState = this.c.getConnectionState;
+  }
 
-export function pubWithHistory(channel, payload) {
-  try {
-    pub(channel, payload);
-    const listId = `${ds.tenant}/history/${channel}`;
-    const list = ds.client.record.getList(listId);
-    list.whenReady(() => {
-      const timestampMs = Date.now();
-      const id = `${listId}/${timestampMs}`;
-      createDataRecord(id, timestampMs / 1000, payload).whenReady(() => list.addEntry(id));
-    });
-  } catch (err) {
-    console.log('Could not create record or update list:', err);
+  setFrequency(freq) {
+    this.maxFreq = new MaxFreq(freq);
+  }
+
+  pub(channel, payload) {
+    createDataRecord(this.c, `${this.tenant}/data/${channel}`, Date.now() / 1000, payload);
+  }
+
+  pubSave(channel, payload) {
+    try {
+      this.pub(channel, payload);
+      const listId = `${this.tenant}/history/${channel}`;
+      const list = this.c.record.getList(listId);
+      list.whenReady(() => {
+        const timestampMs = Date.now();
+        const id = `${listId}/${timestampMs}`;
+        createDataRecord(this.c, id, timestampMs / 1000, payload).whenReady(() =>
+          list.addEntry(id));
+      });
+    } catch (err) {
+      console.log('Could not create record or update list:', err);
+    }
+  }
+
+  pubFreq(channel, payload) {
+    this.maxFreq(this.pub.bind(this), [channel, payload]);
+  }
+
+  pubFreqSave(channel, payload) {
+    this.maxFreq(this.pubWithHistory.bind(this), [channel, payload]);
   }
 }
 
-export function pubFreq(channel, payload) {
-  if (!ds.delay) throw new Error('Must set frequency in init options');
-  maxFreq(pub, [channel, payload], ds.delay);
-}
-
-export function pubFreqWithHistory(channel, payload) {
-  if (!ds.delay) throw new Error('Must set frequency in init options');
-  maxFreq(pubWithHistory, [channel, payload], ds.delay);
-}
-
-export const statuses = deepstream.CONSTANTS.CONNECTION_STATE;
-
-export default ds;
+// ------------------------------------------------------------
+//  FOR SINGLETON USE
+export const eds = { client: undefined };
