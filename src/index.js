@@ -46,12 +46,8 @@ export function updateDataRecord(client, id, timestamp, payload) {
 export default class DSClient {
   constructor(url, options, tenant = 'demo') {
     this.tenant = tenant;
-    // Create deepstream client object and tunnel its API
+    // Create deepstream client object
     this.c = deepstream(url, options);
-    // this.login = this.c.login;
-    // this.close = this.c.close;
-    // this.getUid = this.c.getUid;
-    // this.getConnectionState = this.c.getConnectionState;
     this.channelFreqs = {};
   }
 
@@ -99,7 +95,7 @@ export default class DSClient {
   }
 
   listedRecord(path, id, obj, callback, overwrite) {
-    const rPath = [...path, id || this.c.getUid()];
+    const rPath = [this.tenant, ...path, id || this.c.getUid()];
     const rPathStr = rPath.join('/');
     this.c.record.getRecord(rPathStr).whenReady(record => {
       const list = this.c.record.getList(path.join('/'));
