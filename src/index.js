@@ -98,7 +98,7 @@ export default class DSClient {
     const rPath = [this.tenant, ...path, id || this.c.getUid()];
     const rPathStr = rPath.join('/');
     this.c.record.getRecord(rPathStr).whenReady(record => {
-      const list = this.c.record.getList(path.join('/'));
+      const list = this.c.record.getList([this.tenant, ...path].join('/'));
       list.whenReady(() => {
         if (!(rPathStr in list.getEntries())) list.addEntry(rPathStr);
         if (Object.keys(record.get()).length === 0) {
