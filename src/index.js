@@ -63,7 +63,7 @@ export default class DSClient {
   };
 
   addEntry(list, str) {
-    if (str in list.getEntries()) return;
+    if (list.getEntries().indexOf(str) > -1) return;
     return list.addEntry(str);
   }
 
@@ -105,7 +105,7 @@ export default class DSClient {
       const list = this.c.record.getList([this.tenant, ...path].join('/'));
       list.whenReady(() => {
         console.log(rPathStr, list.getEntries(), rPathStr in list.getEntries());
-        if (!(rPathStr in list.getEntries())) addEntry(list, rPathStr);
+        addEntry(list, rPathStr);
         if (Object.keys(record.get()).length === 0) {
           record.set(obj);
           callback(id, true); // created=true
