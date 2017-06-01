@@ -99,6 +99,7 @@ export default class DSClient {
     this.c.record.getRecord(rPathStr).whenReady(record => {
       const list = this.c.record.getList([this.tenant, ...path].join('/'));
       list.whenReady(() => {
+        console.log(rPathStr, list.getEntries());
         if (!(rPathStr in list.getEntries())) list.addEntry(rPathStr);
         if (Object.keys(record.get()).length === 0) {
           record.set(obj);
