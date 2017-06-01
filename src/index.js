@@ -38,6 +38,11 @@ export function updateDataRecord(client, id, timestamp, payload) {
   return client.record.getRecord(id).set('timestamp', timestamp).set('payload', payload);
 }
 
+export function addEntry(list, str) {
+  if (list.getEntries().indexOf(str) > -1) return;
+  return list.addEntry(str);
+}
+
 export default class DSClient {
   constructor(url, options, tenant = 'demo') {
     this.tenant = tenant;
@@ -62,11 +67,6 @@ export default class DSClient {
     }
   };
 
-  addEntry(list, str) {
-    if (list.getEntries().indexOf(str) > -1) return;
-    return list.addEntry(str);
-  }
-
   pubSave = (channel, payload) => {
     try {
       this.pub(channel, payload);
@@ -76,7 +76,7 @@ export default class DSClient {
         const timestampMs = Date.now();
         const id = `${listId}/${timestampMs}`;
         updateDataRecord(this.c, id, timestampMs / 1000, payload).whenReady(() =>
-          this.addEntry(list, id),
+          addEntry(list, id),
         );
       });
     } catch (err) {
@@ -105,7 +105,7 @@ export default class DSClient {
       const list = this.c.record.getList([this.tenant, ...path].join('/'));
       list.whenReady(() => {
         console.log(rPathStr, list.getEntries(), rPathStr in list.getEntries());
-        this.addEntry(list, rPathStr);
+        addEntry(list, rPathStr);
         if (Object.keys(record.get()).length === 0) {
           record.set(obj);
           callback(id, true); // created=true
@@ -125,14 +125,13 @@ export default class DSClient {
       list.whenReady(() => {
         if (obj.type.length) {
           for (const type of obj.type) {
-            this.addEntry(list, type);
+            addEntry(list, type);
           }
         } else {
-          this.addEntry(list, type);
+          addEntry(list, type);
         }
       });
     }
-    this.c.record.getList([this.tenant, ...path].join('/'));
   }
 }
 
