@@ -76,7 +76,7 @@ export default class DSClient {
         const timestampMs = Date.now();
         const id = `${listId}/${timestampMs}`;
         updateDataRecord(this.c, id, timestampMs / 1000, payload).whenReady(() =>
-          addEntry(list, id),
+          this.addEntry(list, id),
         );
       });
     } catch (err) {
@@ -105,7 +105,7 @@ export default class DSClient {
       const list = this.c.record.getList([this.tenant, ...path].join('/'));
       list.whenReady(() => {
         console.log(rPathStr, list.getEntries(), rPathStr in list.getEntries());
-        addEntry(list, rPathStr);
+        this.addEntry(list, rPathStr);
         if (Object.keys(record.get()).length === 0) {
           record.set(obj);
           callback(id, true); // created=true
@@ -125,10 +125,10 @@ export default class DSClient {
       list.whenReady(() => {
         if (obj.type.length) {
           for (const type of obj.type) {
-            addEntry(list, type);
+            this.addEntry(list, type);
           }
         } else {
-          addEntry(list, type);
+          this.addEntry(list, type);
         }
       });
     }
