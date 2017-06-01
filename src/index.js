@@ -62,6 +62,11 @@ export default class DSClient {
     }
   };
 
+  addEntry(list, str) {
+    if (str in list.getEntries()) return;
+    return list.addEntry(str);
+  }
+
   pubSave = (channel, payload) => {
     try {
       this.pub(channel, payload);
@@ -71,7 +76,7 @@ export default class DSClient {
         const timestampMs = Date.now();
         const id = `${listId}/${timestampMs}`;
         updateDataRecord(this.c, id, timestampMs / 1000, payload).whenReady(() =>
-          list.addEntry(id),
+          addEntry(list, id),
         );
       });
     } catch (err) {
@@ -99,8 +104,8 @@ export default class DSClient {
     this.c.record.getRecord(rPathStr).whenReady(record => {
       const list = this.c.record.getList([this.tenant, ...path].join('/'));
       list.whenReady(() => {
-        console.log(rPathStr, list.getEntries());
-        if (!(rPathStr in list.getEntries())) list.addEntry(rPathStr);
+        console.log(rPathStr, list.getEntries(), rPathStr in list.getEntries());
+        if (!(rPathStr in list.getEntries())) addEntry(list, rPathStr);
         if (Object.keys(record.get()).length === 0) {
           record.set(obj);
           callback(id, true); // created=true
@@ -114,8 +119,18 @@ export default class DSClient {
         }
       });
     });
-    if (obj.type && obj.type.length && (path[0] === 'data' || path[0] === 'asset')) {
-      const dataset = `${path[0]}`;
+    if (obj.type && (path[0] === 'data' || path[0] === 'asset')) {
+      const listPath = `${this.tenant}/${path[0]}Type`;
+      const list = this.c.record.getList(listPath);
+      list.whenReady(() => {
+        if (obj.type.length) {
+          for (const type of obj.type) {
+            addEntry(list, type);
+          }
+        } else {
+          addEntry(list, type);
+        }
+      });
     }
     this.c.record.getList([this.tenant, ...path].join('/'));
   }
