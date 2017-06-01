@@ -35,12 +35,7 @@ export function mergeDeep(target, ...sources) {
 }
 
 export function updateDataRecord(client, id, timestamp, payload) {
-  try {
-    return client.record.getRecord(id).set('timestamp', timestamp).set('payload', payload);
-  } catch (err) {
-    console.log('Could not create record:', err);
-    return undefined;
-  }
+  return client.record.getRecord(id).set('timestamp', timestamp).set('payload', payload);
 }
 
 export default class DSClient {
@@ -60,7 +55,11 @@ export default class DSClient {
   }
 
   pub = (channel, payload) => {
-    updateDataRecord(this.c, `${this.tenant}/data/${channel}`, Date.now() / 1000, payload);
+    try {
+      updateDataRecord(this.c, `${this.tenant}/data/${channel}`, Date.now() / 1000, payload);
+    } catch (err) {
+      console.log('Could not create data record:', err);
+    }
   };
 
   pubSave = (channel, payload) => {
@@ -76,7 +75,7 @@ export default class DSClient {
         );
       });
     } catch (err) {
-      console.log('Could not create record or update list:', err);
+      console.log('Could not create history record:', err);
     }
   };
 
@@ -109,11 +108,15 @@ export default class DSClient {
           callback(id, false); // created=false
         } else {
           const r = record.get();
-          Object.keys(obj).forEach(key => record.set(key, mergeDeep(r[key], obj[key])));
+          record.set(mergeDeep(r, obj));
           callback(id, false); // created=false
         }
       });
     });
+    if (obj.type && obj.type.length && (path[0] === 'data' || path[0] === 'asset')) {
+      const dataset = `${path[0]}`;
+    }
+    this.c.record.getList([this.tenant, ...path].join('/'));
   }
 }
 
