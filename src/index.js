@@ -3,6 +3,8 @@ import MaxFreq from 'max-frequency-caller';
 
 export const statuses = deepstream.CONSTANTS.CONNECTION_STATE;
 
+// TODO: Make Symbols out of data model parts/tags ?
+
 /**
  * Simple object check.
  * @param item
@@ -98,40 +100,72 @@ export default class DSClient {
     this.pubFreq(channel, payload, this.pubWithHistory);
   }
 
-  listedRecord(path, id, obj, callback, overwrite) {
-    const rPath = [this.tenant, ...path, id || this.c.getUid()];
-    const rPathStr = rPath.join('/');
-    this.c.record.getRecord(rPathStr).whenReady(record => {
-      const list = this.c.record.getList([this.tenant, ...path].join('/'));
-      list.whenReady(() => {
-        console.log(rPathStr, list.getEntries(), rPathStr in list.getEntries());
-        addEntry(list, rPathStr);
-        if (Object.keys(record.get()).length === 0) {
-          record.set(obj);
-          callback(id, true); // created=true
-        } else if (overwrite) {
-          Object.keys(obj).forEach(key => record.set(key, obj[key]));
-          callback(id, false); // created=false
-        } else {
-          const r = record.get();
-          record.set(mergeDeep(r, obj));
-          callback(id, false); // created=false
-        }
-      });
+  getExistingRecord(pathStr) {
+    return new Promise((resolve, reject) =>
+      this.edc.c.record.has(pathStr, (error, hasRecord) => {
+        if (error) reject(new Error(error));
+        if (hasRecord) this.edc.c.record.getRecord(pathStr).whenReady(r => resolve(r));
+        else reject(new Error('Record does not exist'));
+      }),
+    );
+  }
+
+  getExistingList(pathStr) {
+    return new Promise((resolve, reject) =>
+      this.edc.c.record.has(pathStr, (error, hasRecord) => {
+        if (error) reject(new Error(error));
+        if (hasRecord) this.edc.c.record.getList(pathStr).whenReady(l => resolve(l));
+        else reject(new Error('List does not exist'));
+      }),
+    );
+  }
+
+  listedRecord(path, id, obj, overwrite) {
+    return new Promise((resolve, reject) => {
+      try {
+        const rPath = [this.tenant, ...path, id || this.c.getUid()];
+        const lPathStr = [this.tenant, ...path].join('/');
+        const rPathStr = rPath.join('/');
+        this.c.record.getRecord(rPathStr).whenReady(record => {
+          this.c.record.getList(lPathStr).whenReady(list => {
+            // console.log(rPathStr, list.getEntries(), rPathStr in list.getEntries());
+            try {
+              // Update list:
+              addEntry(list, rPathStr);
+              // Update record:
+              let created = false;
+              if (Object.keys(record.get()).length === 0) {
+                record.set(obj);
+                created = true;
+              } else if (overwrite) {
+                Object.keys(obj).forEach(key => record.set(key, obj[key]));
+              } else {
+                const r = record.get();
+                record.set(mergeDeep(r, obj));
+              }
+              // Perhaps update dataType or assetType:
+              if (obj.type && (path[0] === 'data' || path[0] === 'asset')) {
+                const listPath = `${this.tenant}/${path[0]}Type`;
+                this.c.record.getList(listPath).whenReady(types => {
+                  if (obj.type.length) {
+                    for (const type of obj.type) {
+                      addEntry(types, type);
+                    }
+                  } else {
+                    addEntry(types, type);
+                  }
+                  resolve(id, created);
+                });
+              } else resolve(id, created);
+            } catch (err) {
+              reject(err);
+            }
+          });
+        });
+      } catch (err) {
+        reject(err);
+      }
     });
-    if (obj.type && (path[0] === 'data' || path[0] === 'asset')) {
-      const listPath = `${this.tenant}/${path[0]}Type`;
-      const list = this.c.record.getList(listPath);
-      list.whenReady(() => {
-        if (obj.type.length) {
-          for (const type of obj.type) {
-            addEntry(list, type);
-          }
-        } else {
-          addEntry(list, type);
-        }
-      });
-    }
   }
 }
 
