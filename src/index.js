@@ -100,24 +100,22 @@ export default class DSClient {
     this.pubFreq(channel, payload, this.pubWithHistory);
   }
 
-  getExistingRecord(pathStr) {
+  _$getExisting(type, pathStr) {
     return new Promise((resolve, reject) =>
       this.edc.c.record.has(pathStr, (error, hasRecord) => {
         if (error) reject(new Error(error));
-        if (hasRecord) this.edc.c.record.getRecord(pathStr).whenReady(r => resolve(r));
-        else reject(new Error('Record does not exist'));
+        if (hasRecord) this.edc.c.record[`get${type}`](pathStr).whenReady(r => resolve(r));
+        else reject(new Error(`${type} does not exist`));
       }),
     );
   }
 
+  getExistingRecord(pathStr) {
+    return _$getExisting('Record', pathStr);
+  }
+
   getExistingList(pathStr) {
-    return new Promise((resolve, reject) =>
-      this.edc.c.record.has(pathStr, (error, hasRecord) => {
-        if (error) reject(new Error(error));
-        if (hasRecord) this.edc.c.record.getList(pathStr).whenReady(l => resolve(l));
-        else reject(new Error('List does not exist'));
-      }),
-    );
+    return _$getExisting('List', pathStr);
   }
 
   listedRecord(path, id, obj, overwrite) {
