@@ -102,7 +102,7 @@ export default function getClient(url, options) {
 }
 
 function withTenant(func, name, ...args) {
-  return this[func](`${this.getTenant()}/${name}`, ...args);
+  return this.record[func](`${this.getTenant()}/${name}`, ...args);
 }
 
 export function getClientWithTenant(url, options, tenant = 'demo') {
