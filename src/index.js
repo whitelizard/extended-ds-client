@@ -115,6 +115,7 @@ export function getClientWithTenant(url, options, tenant = 'demo') {
   c.record.getExistingListPT = withTenant.bind(c, 'getExistingListP');
   c.record.snapshotPT = withTenant.bind(c, 'snapshotP');
   c.record.listedRecordPT = withTenant.bind(c, 'listedRecordP');
+  return c;
 }
 
 // ------------------------------------------------------------
