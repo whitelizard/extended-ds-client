@@ -45,7 +45,7 @@ function getExistingP(type, pathStr) {
     this.record.has(pathStr, (error, hasRecord) => {
       if (error) reject(new Error(error));
       if (hasRecord) this.record[`get${type}`](pathStr).whenReady(r => resolve(r));
-      else reject(new Error(`${type} does not exist`));
+      else reject(new Error(`${type} does not exist: ${pathStr}`));
     }),
   );
 }
@@ -84,7 +84,7 @@ function listedRecordP(listPath, recordId, obj, overwrite) {
       } else {
         record.set(mergeDeep(r, obj));
       }
-      Promise.resolve(id, created);
+      Promise.resolve([id, created]);
     } catch (err) {
       Promise.reject(err);
     }
