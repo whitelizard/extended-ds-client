@@ -40,6 +40,14 @@ export function addEntry(list, str) {
   return list.addEntry(str);
 }
 
+function getRecordP(name) {
+  return new Promise(resolve => this.record.getRecord(name).whenReady(r => resolve(r)));
+}
+
+function getListP(name) {
+  return new Promise(resolve => this.record.getList(name).whenReady(r => resolve(r)));
+}
+
 function getExistingP(type, pathStr) {
   return new Promise((resolve, reject) =>
     this.record.has(pathStr, (error, hasRecord) => {
@@ -48,10 +56,6 @@ function getExistingP(type, pathStr) {
       else reject(new Error(`${type} does not exist: ${pathStr}`));
     }),
   );
-}
-
-function getRecordP(name) {
-  return new Promise(resolve => this.record.getRecord(name).whenReady(r => resolve(r)));
 }
 
 function snapshotP(name) {
@@ -94,6 +98,7 @@ function listedRecordP(listPath, recordId, obj, overwrite) {
 export default function getClient(url, options) {
   const c = deepstream(url, options);
   c.record.getRecordP = getRecordP.bind(c);
+  c.record.getListP = getListP.bind(c);
   c.record.getExistingRecordP = getExistingP.bind(c, 'Record');
   c.record.getExistingListP = getExistingP.bind(c, 'List');
   c.record.snapshotP = snapshotP.bind(c);
