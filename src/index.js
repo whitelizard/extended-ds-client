@@ -116,9 +116,15 @@ export function getClientWithTenant(url, options, tenant = 'demo') {
     return this;
   }.bind(tenant); // non-closure getter
   c.record.getRecordPT = withTenant.bind(c, 'getRecordP');
+  c.record.getRecordT = withTenant.bind(c, 'getRecord');
+  c.record.getListPT = withTenant.bind(c, 'getListP');
+  c.record.getListT = withTenant.bind(c, 'getList');
   c.record.getExistingRecordPT = withTenant.bind(c, 'getExistingRecordP');
+  c.record.getExistingRecordT = withTenant.bind(c, 'getExistingRecord');
   c.record.getExistingListPT = withTenant.bind(c, 'getExistingListP');
+  c.record.getExistingListT = withTenant.bind(c, 'getExistingList');
   c.record.snapshotPT = withTenant.bind(c, 'snapshotP');
+  c.record.snapshotT = withTenant.bind(c, 'snapshot');
   c.record.listedRecordPT = withTenant.bind(c, 'listedRecordP');
   return c;
 }
