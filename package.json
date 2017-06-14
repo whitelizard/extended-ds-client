@@ -1,6 +1,6 @@
 {
   "name": "extended-ds-client",
-  "version": "2.0.5",
+  "version": "2.0.6",
   "description": "Extended deepstream client",
   "main": "index.js",
   "scripts": {
