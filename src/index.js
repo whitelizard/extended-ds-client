@@ -74,25 +74,21 @@ function listedRecordP(listPath, recordId, obj, overwrite) {
     this.record.getRecordP(rPath),
     this.record.getListP(listPath),
   ]).then(([record, list]) => {
-    try {
-      // Update list:
-      addEntry(list, rPath);
-      // Update record:
-      let created = false;
-      const r = record.get();
-      const newRecord = { id: recordId, ...obj };
-      if (Object.keys(r).length === 0) {
-        record.set(newRecord);
-        created = true;
-      } else if (overwrite) {
-        Object.keys(newRecord).forEach(key => record.set(key, newRecord[key]));
-      } else {
-        record.set(mergeDeep(r, obj));
-      }
-      Promise.resolve([id, created]);
-    } catch (err) {
-      Promise.reject(err);
+    // Update list:
+    addEntry(list, rPath);
+    // Update record:
+    let created = false;
+    const r = record.get();
+    const newRecord = { id: recordId, ...obj };
+    if (Object.keys(r).length === 0) {
+      record.set(newRecord);
+      created = true;
+    } else if (overwrite) {
+      Object.keys(newRecord).forEach(key => record.set(key, newRecord[key]));
+    } else {
+      record.set(mergeDeep(r, obj));
     }
+    return [id, created];
   });
 }
 
