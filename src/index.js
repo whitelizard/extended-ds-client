@@ -80,11 +80,12 @@ function listedRecordP(listPath, recordId, obj, overwrite) {
       // Update record:
       let created = false;
       const r = record.get();
+      const newRecord = { id: recordId, ...obj };
       if (Object.keys(r).length === 0) {
-        record.set({ id: recordId, ...obj });
+        record.set(newRecord);
         created = true;
       } else if (overwrite) {
-        Object.keys(obj).forEach(key => record.set(key, obj[key]));
+        Object.keys(newRecord).forEach(key => record.set(key, newRecord[key]));
       } else {
         record.set(mergeDeep(r, obj));
       }
