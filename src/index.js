@@ -1,5 +1,4 @@
 import deepstream from 'deepstream.io-client-js';
-import MaxFreq from 'max-frequency-caller';
 
 export const statuses = deepstream.CONSTANTS.CONNECTION_STATE;
 
@@ -36,137 +35,107 @@ export function mergeDeep(target, ...sources) {
   return mergeDeep(target, ...sources);
 }
 
-export function updateDataRecord(client, id, timestamp, payload) {
-  return client.record.getRecord(id).set('timestamp', timestamp).set('payload', payload);
-}
-
 export function addEntry(list, str) {
   if (list.getEntries().indexOf(str) > -1) return;
   return list.addEntry(str);
 }
 
-export default class DSClient {
-  constructor(url, options, tenant = 'demo') {
-    this.tenant = tenant;
-    // Create deepstream client object
-    this.c = deepstream(url, options);
-    this.channelFreqs = {};
-  }
+function getRecordP(name) {
+  return new Promise(resolve => this.record.getRecord(name).whenReady(r => resolve(r)));
+}
 
-  setTotalFrequency(freq) {
-    this.maxFreq = new MaxFreq(freq);
-  }
+function getListP(name) {
+  return new Promise(resolve => this.record.getList(name).whenReady(r => resolve(r)));
+}
 
-  setChannelFrequency(channel, freq) {
-    this.channelFreqs[channel] = new MaxFreq(freq);
-  }
+function getExistingP(type, pathStr) {
+  return new Promise((resolve, reject) =>
+    this.record.has(pathStr, (error, hasRecord) => {
+      if (error) reject(new Error(error));
+      if (hasRecord) this.record[`get${type}`](pathStr).whenReady(r => resolve(r));
+      else reject(new Error(`${type} does not exist: ${pathStr}`));
+    }),
+  );
+}
 
-  pub = (channel, payload) => {
-    try {
-      updateDataRecord(this.c, `${this.tenant}/data/${channel}`, Date.now() / 1000, payload);
-    } catch (err) {
-      console.log('Could not create data record:', err);
-    }
-  };
+function snapshotP(name) {
+  return new Promise((resolve, reject) =>
+    this.record.snapshot(name, (error, data) => {
+      if (error) reject(new Error(error));
+      else resolve(data);
+    }),
+  );
+}
 
-  pubSave = (channel, payload) => {
-    try {
-      this.pub(channel, payload);
-      const listId = `${this.tenant}/history/${channel}`;
-      const list = this.c.record.getList(listId);
-      list.whenReady(() => {
-        const timestampMs = Date.now();
-        const id = `${listId}/${timestampMs}`;
-        updateDataRecord(this.c, id, timestampMs / 1000, payload).whenReady(() =>
-          addEntry(list, id),
-        );
-      });
-    } catch (err) {
-      console.log('Could not create history record:', err);
-    }
-  };
-
-  pubFreq(channel, payload, func = this.pub) {
-    if (this.maxFreq) {
-      this.maxFreq(func, [channel, payload]);
-    } else if (this.channelFreqs[channel]) {
-      this.channelFreqs[channel](func, [channel, payload]);
+function listedRecordP(listPath, recordId, obj, overwrite) {
+  const id = recordId || this.getUid();
+  const rPath = `${listPath}/${id}`;
+  return Promise.all([
+    this.record.getRecordP(rPath),
+    this.record.getListP(listPath),
+  ]).then(([record, list]) => {
+    // Update list:
+    addEntry(list, rPath);
+    // Update record:
+    let created = false;
+    const r = record.get();
+    const newRecord = { id: recordId, ...obj };
+    if (Object.keys(r).length === 0) {
+      record.set(newRecord);
+      created = true;
+    } else if (overwrite) {
+      Object.keys(newRecord).forEach(key => record.set(key, newRecord[key]));
     } else {
-      throw new Error('No frequency set (total or channel specific)');
+      record.set(mergeDeep(r, obj));
     }
-  }
+    return [id, created];
+  });
+}
 
-  pubFreqSave(channel, payload) {
-    this.pubFreq(channel, payload, this.pubWithHistory);
-  }
+function loginP(authParams) {
+  return new Promise((resolve, reject) =>
+    this.login(authParams, (success, data) => {
+      if (success) resolve(data);
+      else reject(new Error(data));
+    }),
+  );
+}
 
-  _$getExisting(type, pathStr) {
-    return new Promise((resolve, reject) =>
-      this.edc.c.record.has(pathStr, (error, hasRecord) => {
-        if (error) reject(new Error(error));
-        if (hasRecord) this.edc.c.record[`get${type}`](pathStr).whenReady(r => resolve(r));
-        else reject(new Error(`${type} does not exist`));
-      }),
-    );
-  }
+export default function getClient(url, options) {
+  const c = deepstream(url, options);
+  c.record.getRecordP = getRecordP.bind(c);
+  c.record.getListP = getListP.bind(c);
+  c.record.getExistingRecordP = getExistingP.bind(c, 'Record');
+  c.record.getExistingListP = getExistingP.bind(c, 'List');
+  c.record.snapshotP = snapshotP.bind(c);
+  c.record.listedRecordP = listedRecordP.bind(c);
+  c.loginP = loginP.bind(c);
+  return c;
+}
 
-  getExistingRecord(pathStr) {
-    return _$getExisting('Record', pathStr);
-  }
+function withTenant(func, name, ...args) {
+  return this.record[func](`${this.getTenant()}/${name}`, ...args);
+}
 
-  getExistingList(pathStr) {
-    return _$getExisting('List', pathStr);
-  }
-
-  listedRecord(path, id, obj, overwrite) {
-    return new Promise((resolve, reject) => {
-      try {
-        const rPath = [this.tenant, ...path, id || this.c.getUid()];
-        const lPathStr = [this.tenant, ...path].join('/');
-        const rPathStr = rPath.join('/');
-        this.c.record.getRecord(rPathStr).whenReady(record => {
-          this.c.record.getList(lPathStr).whenReady(list => {
-            // console.log(rPathStr, list.getEntries(), rPathStr in list.getEntries());
-            try {
-              // Update list:
-              addEntry(list, rPathStr);
-              // Update record:
-              let created = false;
-              if (Object.keys(record.get()).length === 0) {
-                record.set(obj);
-                created = true;
-              } else if (overwrite) {
-                Object.keys(obj).forEach(key => record.set(key, obj[key]));
-              } else {
-                const r = record.get();
-                record.set(mergeDeep(r, obj));
-              }
-              // Perhaps update dataType or assetType:
-              if (obj.type && (path[0] === 'data' || path[0] === 'asset')) {
-                const listPath = `${this.tenant}/${path[0]}Type`;
-                this.c.record.getList(listPath).whenReady(types => {
-                  if (obj.type.length) {
-                    for (const type of obj.type) {
-                      addEntry(types, type);
-                    }
-                  } else {
-                    addEntry(types, type);
-                  }
-                  resolve(id, created);
-                });
-              } else resolve(id, created);
-            } catch (err) {
-              reject(err);
-            }
-          });
-        });
-      } catch (err) {
-        reject(err);
-      }
-    });
-  }
+export function getClientWithTenant(url, options, tenant = 'demo') {
+  const c = getClient(url, options);
+  c.getTenant = function () {
+    return this;
+  }.bind(tenant); // non-closure getter
+  c.record.getRecordPT = withTenant.bind(c, 'getRecordP');
+  c.record.getRecordT = withTenant.bind(c, 'getRecord');
+  c.record.getListPT = withTenant.bind(c, 'getListP');
+  c.record.getListT = withTenant.bind(c, 'getList');
+  c.record.getExistingRecordPT = withTenant.bind(c, 'getExistingRecordP');
+  c.record.getExistingRecordT = withTenant.bind(c, 'getExistingRecord');
+  c.record.getExistingListPT = withTenant.bind(c, 'getExistingListP');
+  c.record.getExistingListT = withTenant.bind(c, 'getExistingList');
+  c.record.snapshotPT = withTenant.bind(c, 'snapshotP');
+  c.record.snapshotT = withTenant.bind(c, 'snapshot');
+  c.record.listedRecordPT = withTenant.bind(c, 'listedRecordP');
+  return c;
 }
 
 // ------------------------------------------------------------
 //  FOR SINGLETON USE
-export const eds = { client: undefined };
+export const ds = { client: undefined };
