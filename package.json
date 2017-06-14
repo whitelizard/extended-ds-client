@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/whitelizard/extended-ds-client#readme",
   "dependencies": {
+    "babel-plugin-transform-object-rest-spread": "^6.23.0",
     "deepstream.io-client-js": "^2.1.5",
     "max-frequency-caller": "^1.0.0"
   },
