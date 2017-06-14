@@ -36,11 +36,10 @@ client.loginP({})
 
 const users = {};
 client.record.getListP('users').then(list => {
-  const userList = list.getEntries();
-  // With the list above, map each entry to a record promise and
+  // With the list of entries, map each entry to a record promise and
   // wait for all to get finished:
   Promise.all(
-    userList.map(
+    list.getEntries().map(
       path => client.record.getRecordP(path)
     )
   )
@@ -57,7 +56,7 @@ client.record.getList('article/x35b/comments');
 
 ## API
 
-#### loginP
+### `loginP`
 
 Straightforward promisification of login. See **Example 1** above.
 
@@ -67,7 +66,7 @@ Straightforward promisification of login. See **Example 1** above.
 const client = getClient('localhost:6020').login({}, success => console.log(success));
 ```
 
-#### record.getRecordP
+### `record.getRecordP`
 
 Promisification of `record.getRecord`. No callback, instead `.then` and `.catch`.
 
@@ -75,7 +74,7 @@ Promisification of `record.getRecord`. No callback, instead `.then` and `.catch`
 client.record.getRecordP(name).then(..).catch(..);
 ```
 
-#### record.getListP
+### `record.getListP`
 
 Promisification of `record.getList`. No callback, instead `.then` and `.catch`.
 
@@ -83,7 +82,7 @@ Promisification of `record.getList`. No callback, instead `.then` and `.catch`.
 client.record.getListP(name).then(..).catch(..);
 ```
 
-#### record.snapshotP
+### `record.snapshotP`
 
 Promisification of `record.snapshot`. No callback, instead `.then` and `.catch`.
 
@@ -91,13 +90,38 @@ Promisification of `record.snapshot`. No callback, instead `.then` and `.catch`.
 client.record.snapshotP(name).then(..).catch(..);
 ```
 
-#### record.record.getExistingRecordP
+### `record.getExistingRecordP`
 
-Additional method that does a `.has`-check before `.getRecord`, to get a record handler without implicit record creation (Compare with `snapshot` that fails if the record does not exist, but returns the actual record instead of a record handler). It rejects the promise if the record does not exist.
+Additional method that does a `.has`-check before `.getRecord` to get a record handler without implicit record creation (Compare with `snapshot` that fails if the record does not exist, but returns the actual record instead of a record handler). It rejects the promise if the record does not exist.
 
 ```javascript
-client.record.snapshotP(name).then(..).catch(..);
+client.record.getExistingRecordP(name).then(..).catch(..);
 ```
 
+### `record.getExistingListP`
+
+Like `getExistingRecordP` above, but for List.
+
+```javascript
+client.record.getExistingListP(name).then(..).catch(..);
+```
+
+### `record.listedRecordP`
+
+In case you often end up with the structure of having a list of some type of records as the "parent" of those records. For example a list of all books at `books` and the books at `books/one-child`, `books/way-of-the-peaceful-warrior` and `books/bilbo`.
+
+```javascript
+client.record.listedRecordP('books', 'bilbo', { author: 'J R R Tolkien', title: 'Bilbo' })
+  .then(([id, created]) => {
+    console.log(id, created); // => bilbo true (if it did not exist, otherwise false)
+    client.record.getListP('books').then(list => {
+      list.getEntries().forEach(path => {
+        client.record.snapshotP(path).then(book => {
+          console.log(book.author, '-', book.title); // => J R R Tolkien - Bilbo
+        });
+      });
+    });
+  });
+```
 
 ## MORE TO COME...
