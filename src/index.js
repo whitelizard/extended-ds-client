@@ -81,7 +81,7 @@ function listedRecordP(listPath, recordId, obj, overwrite) {
       let created = false;
       const r = record.get();
       if (Object.keys(r).length === 0) {
-        record.set(obj);
+        record.set({ id: recordId, ...obj });
         created = true;
       } else if (overwrite) {
         Object.keys(obj).forEach(key => record.set(key, obj[key]));
@@ -95,6 +95,15 @@ function listedRecordP(listPath, recordId, obj, overwrite) {
   });
 }
 
+function loginP(authParams) {
+  return new Promise((resolve, reject) =>
+    this.login(authParams, (success, data) => {
+      if (success) resolve(data);
+      else reject(new Error(data));
+    }),
+  );
+}
+
 export default function getClient(url, options) {
   const c = deepstream(url, options);
   c.record.getRecordP = getRecordP.bind(c);
@@ -103,6 +112,7 @@ export default function getClient(url, options) {
   c.record.getExistingListP = getExistingP.bind(c, 'List');
   c.record.snapshotP = snapshotP.bind(c);
   c.record.listedRecordP = listedRecordP.bind(c);
+  c.loginP = loginP.bind(c);
   return c;
 }
 
