@@ -20,6 +20,7 @@
   "dependencies": {
     "babel-plugin-transform-object-rest-spread": "^6.23.0",
     "deepstream.io-client-js": "^2.1.5",
+    "lodash.merge": "^4.6.0",
     "max-frequency-caller": "^1.0.0"
   },
   "devDependencies": {

@@ -3,6 +3,12 @@ import merge from 'lodash.merge';
 
 export const statuses = deepstream.CONSTANTS.CONNECTION_STATE;
 
+/**
+ * Add entry to a DS List (avoiding duplicates).
+ * !! Always use this instead of list.addEntry !!
+ * @param {Object} list Deepstream List handle
+ * @param {String} str  Entry to add
+ */
 export function addEntry(list, str) {
   if (list.getEntries().indexOf(str) > -1) return undefined;
   return list.addEntry(str);
@@ -41,38 +47,38 @@ function listedRecordP(listPath, recordId, obj, deepMerge, overwrite) {
   return Promise.all([
     this.record.getRecordP(rPath),
     this.record.getListP(listPath),
-  ]).then(([record, list]) => {
+  ]).then(([r, l]) => {
     // Update list:
-    addEntry(list, rPath);
+    addEntry(l, rPath);
     // Update record:
     let created = false;
-    const r = record.get();
+    const record = r.get();
     const newRecord = { id: recordId, ...obj };
-    if (Object.keys(r).length === 0) {
-      record.set(newRecord);
+    if (Object.keys(record).length === 0) {
+      r.set(newRecord);
       created = true;
     } else if (deepMerge) {
-      record.set(merge(r, obj));
+      r.set(merge(record, obj));
     } else if (overwrite) {
-      record.set(newRecord);
+      r.set(newRecord);
     } else {
-      Object.keys(newRecord).forEach(key => record.set(key, newRecord[key]));
+      Object.keys(newRecord).forEach(key => r.set(key, newRecord[key]));
     }
     return [id, created];
   });
 }
 
 function setExistingRecordP(name, obj, deepMerge, overwrite) {
-  return this.record.getExistingRecordP(name).then(record => {
+  return this.record.getExistingRecordP(name).then(r => {
     if (deepMerge) {
-      const r = record.get();
-      record.set(merge(r, obj));
+      const record = r.get();
+      r.set(merge(record, obj));
     } else if (overwrite) {
-      record.set(obj);
+      r.set(obj);
     } else {
-      Object.keys(obj).forEach(key => record.set(key, obj[key]));
+      Object.keys(obj).forEach(key => r.set(key, obj[key]));
     }
-    return record;
+    return r;
   });
 }
 
