@@ -22,10 +22,6 @@ function getListP(name) {
   return new Promise(resolve => this.record.getList(name).whenReady(r => resolve(r)));
 }
 
-function removeFromList(listPath, id) {
-  this.record.getList(listPath).whenReady(l => l.removeEntry(id));
-}
-
 function getExistingP(type, pathStr) {
   return new Promise((resolve, reject) =>
     this.record.has(pathStr, (error, hasRecord) => {
@@ -34,6 +30,10 @@ function getExistingP(type, pathStr) {
       else reject(new Error(`${type} does not exist: ${pathStr}`));
     }),
   );
+}
+
+function removeFromList(listPath, id) {
+  this.record.getExistingListP(listPath).then(l => l.removeEntry(id));
 }
 
 function snapshotP(name) {
