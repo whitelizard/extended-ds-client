@@ -32,7 +32,7 @@ function getExistingP(type, pathStr) {
   );
 }
 
-function removeFromList(listPath, id) {
+function removeFromListP(listPath, id) {
   return this.record.getExistingListP(listPath).then(l => {
     l.removeEntry(id);
     return l;
@@ -117,7 +117,7 @@ export default function getClient(url, options) {
   c.record.setExistingRecordP = setExistingRecordP.bind(c);
   c.record.snapshotP = snapshotP.bind(c);
   c.record.hasP = hasP.bind(c);
-  c.record.removeFromList = removeFromList.bind(c);
+  c.record.removeFromListP = removeFromListP.bind(c);
   c.record.listedRecordP = listedRecordP.bind(c);
   c.loginP = loginP.bind(c);
   return c;
@@ -140,7 +140,10 @@ export function getClientWithTenant(url, options, tenant = 'demo') {
   c.record.snapshotT = withTenant.bind(c, 'snapshot');
   c.record.hasPT = withTenant.bind(c, 'hasP');
   c.record.hasT = withTenant.bind(c, 'has');
-  c.record.removeFromListT = withTenant.bind(c, 'removeFromList');
+  c.record.removeFromListPT = withTenant.bind(c, 'removeFromListP');
+  c.record.removeFromListPTT = function (name, id) {
+    return this.record.removeFromListP(`${this.getTenant()}/${name}`, `${this.getTenant()}/${id}`);
+  }.bind(c);
   c.record.getExistingRecordPT = withTenant.bind(c, 'getExistingRecordP');
   c.record.getExistingListPT = withTenant.bind(c, 'getExistingListP');
   c.record.listedRecordPT = withTenant.bind(c, 'listedRecordP');
