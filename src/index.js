@@ -33,7 +33,10 @@ function getExistingP(type, pathStr) {
 }
 
 function removeFromList(listPath, id) {
-  this.record.getExistingListP(listPath).then(l => l.removeEntry(id));
+  return this.record.getExistingListP(listPath).then(l => {
+    l.removeEntry(id);
+    return l;
+  });
 }
 
 function snapshotP(name) {
