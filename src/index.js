@@ -22,6 +22,10 @@ function getListP(name) {
   return new Promise(resolve => this.record.getList(name).whenReady(r => resolve(r)));
 }
 
+function removeFromList(listPath, id) {
+  this.record.getList(listPath).whenReady(l => l.removeEntry(id));
+}
+
 function getExistingP(type, pathStr) {
   return new Promise((resolve, reject) =>
     this.record.has(pathStr, (error, hasRecord) => {
@@ -41,7 +45,7 @@ function snapshotP(name) {
   );
 }
 
-function listedRecordP(listPath, recordId, obj, deepMerge, overwrite) {
+function listedRecordP(listPath, recordId, obj, deepMerge, overwrite, fullPathList = true) {
   const id = recordId || this.getUid();
   const rPath = `${listPath}/${id}`;
   return Promise.all([
@@ -49,11 +53,12 @@ function listedRecordP(listPath, recordId, obj, deepMerge, overwrite) {
     this.record.getListP(listPath),
   ]).then(([r, l]) => {
     // Update list:
-    addEntry(l, rPath);
+    if (fullPathList) addEntry(l, rPath);
+    else addEntry(l, id);
     // Update record:
     let created = false;
     const record = r.get();
-    const newRecord = { id: recordId, ...obj };
+    const newRecord = { ...obj, id: recordId };
     if (Object.keys(record).length === 0) {
       r.set(newRecord);
       created = true;
@@ -109,6 +114,7 @@ export default function getClient(url, options) {
   c.record.setExistingRecordP = setExistingRecordP.bind(c);
   c.record.snapshotP = snapshotP.bind(c);
   c.record.hasP = hasP.bind(c);
+  c.record.removeFromList = removeFromList.bind(c);
   c.record.listedRecordP = listedRecordP.bind(c);
   c.loginP = loginP.bind(c);
   return c;
@@ -131,6 +137,7 @@ export function getClientWithTenant(url, options, tenant = 'demo') {
   c.record.snapshotT = withTenant.bind(c, 'snapshot');
   c.record.hasPT = withTenant.bind(c, 'hasP');
   c.record.hasT = withTenant.bind(c, 'has');
+  c.record.removeFromListT = withTenant.bind(c, 'removeFromList');
   c.record.getExistingRecordPT = withTenant.bind(c, 'getExistingRecordP');
   c.record.getExistingListPT = withTenant.bind(c, 'getExistingListP');
   c.record.listedRecordPT = withTenant.bind(c, 'listedRecordP');
