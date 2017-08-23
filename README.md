@@ -116,20 +116,6 @@ Like `getExistingRecordP` above, but for List.
 client.record.getExistingListP(name).then(..).catch(..);
 ```
 
-### `record.setExistingRecordP`
-
-Update an existing record, with possibility of different merge strategies. Default is a shallow merge.
-
-#### Arguments
-- `name:string` is the name/path of the record.
-- `obj:Object` is an object with either an entire record or updates to merge into it.
-- `deepMerge:boolean` (false) will turn on deep merge of `obj` into the record.
-- `overwrite:boolean` (false) will replace the record with `obj`.
-
-```javascript
-client.record.setExistingRecordP('books/bilbo', { author: 'John Ronald Reuel Tolkien' }).then(...).catch(...)
-```
-
 ### `record.listedRecordP`
 
 In case you often end up with the structure of having a list of some type of records as the "parent" of those records. For example a list of all books at `books` and the books at `books/one-child`, `books/way-of-the-peaceful-warrior` and `books/bilbo`.
@@ -155,6 +141,20 @@ client.record.listedRecordP('books', 'bilbo', { author: 'J R R Tolkien', title: 
       });
     });
   });
+```
+
+### `record.setExistingRecordP`
+
+Update an existing record, with possibility of different merge strategies. Default is a shallow merge.
+
+#### Arguments
+- `name:string` is the name/path of the record.
+- `obj:Object` is an object with either an entire record or updates to merge into it.
+- `deepMerge:boolean` (false) will turn on deep merge of `obj` into the record.
+- `overwrite:boolean` (false) will replace the record with `obj`.
+
+```javascript
+client.record.setExistingRecordP('books/bilbo', { author: 'John Ronald Reuel Tolkien' }).then(...).catch(...)
 ```
 
 ## Licence
