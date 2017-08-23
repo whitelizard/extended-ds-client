@@ -11,9 +11,11 @@ These are the basic additional functions:
 - `record.getRecordP`
 - `record.getListP`
 - `record.snapshotP`
+- `record.hasP`
 - `record.getExistingRecordP`
 - `record.getExistingListP`
 - `record.listedRecordP`
+- `record.setExistingRecordP`
 
 ### Install
 
