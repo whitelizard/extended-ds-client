@@ -90,6 +90,14 @@ Promisification of `record.snapshot`. No callback, instead `.then` and `.catch`.
 client.record.snapshotP(name).then(..).catch(..);
 ```
 
+### `record.hasP`
+
+Promisification of `record.has`. No callback, instead `.then` and `.catch`.
+
+```javascript
+client.record.hasP(name).then(..).catch(..);
+```
+
 ### `record.getExistingRecordP`
 
 Additional method that does a `.has`-check before `.getRecord` to get a record handler without implicit record creation (Compare with `snapshot` that fails if the record does not exist, but returns the actual record instead of a record handler). It rejects the promise if the record does not exist.
@@ -106,9 +114,20 @@ Like `getExistingRecordP` above, but for List.
 client.record.getExistingListP(name).then(..).catch(..);
 ```
 
+## Additional API functions
+
 ### `record.listedRecordP`
 
 In case you often end up with the structure of having a list of some type of records as the "parent" of those records. For example a list of all books at `books` and the books at `books/one-child`, `books/way-of-the-peaceful-warrior` and `books/bilbo`.
+Supports different merge strategies. Default is a shallow merge.
+
+#### Arguments
+- `listPath:string` is the path to the list.
+- `recordId:string` is the ID of the record.
+- `obj:Object` is an object with either an entire record or updates to merge into it.
+- `deepMerge:boolean` (false) will turn on deep merge of `obj` into the record.
+- `overwrite:boolean` (false) will replace the record with `obj`.
+- `fullPathList:boolean` (true) will store the full record path in the list.
 
 ```javascript
 client.record.listedRecordP('books', 'bilbo', { author: 'J R R Tolkien', title: 'Bilbo' })
@@ -124,4 +143,19 @@ client.record.listedRecordP('books', 'bilbo', { author: 'J R R Tolkien', title: 
   });
 ```
 
-## MORE TO COME...
+### `record.setExistingRecordP`
+
+Update an existing record, with possibility of different merge strategies. Default is a shallow merge.
+
+#### Arguments
+- `name:string` is the name/path of the record.
+- `obj:Object` is an object with either an entire record or updates to merge into it.
+- `deepMerge:boolean` (false) will turn on deep merge of `obj` into the record.
+- `overwrite:boolean` (false) will replace the record with `obj`.
+
+```javascript
+client.record.setExistingRecordP('books/bilbo', { author: 'John Ronald Reuel Tolkien' }).then(...).catch(...)
+```
+
+## Licence
+MIT
