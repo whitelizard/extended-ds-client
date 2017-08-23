@@ -60,7 +60,7 @@ client.record.getList('article/x35b/comments');
 
 Straightforward promisification of login. See **Example 1** above.
 
-**Note:** Old login still works, and the common chaining of client object creation and login is therefor still possible:
+**Note:** Old login still works, and the common chaining of client object creation and login is therefore still possible:
 
 ```javascript
 const client = getClient('localhost:6020').login({}, success => console.log(success));
