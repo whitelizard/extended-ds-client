@@ -14,7 +14,7 @@ These are the additional functions:
 - `record.hasP`
 - `record.getExistingRecordP`
 - `record.getExistingListP`
-- `record.listedRecordP`
+- `record.getListedRecordP` (previously `record.listedRecordP`)
 - `record.setExistingRecordP`
 - `rpc.makeP`
 
@@ -167,7 +167,7 @@ Supports different merge strategies. Default is a shallow merge.
 - `fullPathList: boolean` (true)  will store the full record path in the list, otherwise only the record ID.
 
 ```javascript
-client.record.listedRecordP('books', 'bilbo', { author: 'J R R Tolkien', title: 'Bilbo' })
+client.record.getListedRecordP('books', 'bilbo', { author: 'J R R Tolkien', title: 'Bilbo' })
   .then(([id, created]) => {
     console.log(id, created); // => bilbo true (if it did not exist, otherwise false)
     client.record.getListP('books').then(list => {
