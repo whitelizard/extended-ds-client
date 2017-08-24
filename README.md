@@ -1,12 +1,12 @@
 # Extended Deepstream client
 
-Promise based deepstream client. It's basically just the [`deepstream.io-client-js`](https://www.npmjs.com/package/deepstream.io-client-js). with basic calls promisified plus some extra methods.
+Promise based deepstream client. It's basically just the [`deepstream.io-client-js`](https://www.npmjs.com/package/deepstream.io-client-js) with basic calls promisified, plus some extra methods.
 
 ## Overview
 
-Creating a client through this package will give you additional methods on the client object, leaving everything from the real client untouched (getRecord, getList etc).
+Creating a client through this package will give you additional methods on the client object, leaving everything from the default client untouched (getRecord, getList etc).
 
-These are the basic additional functions:
+These are the additional functions:
 - `loginP`
 - `record.getRecordP`
 - `record.getListP`
@@ -17,6 +17,11 @@ These are the basic additional functions:
 - `record.listedRecordP`
 - `record.setExistingRecordP`
 - `rpc.makeP`
+
+In case of rejection on any of these functions, the rejected argument is always an instance of Error.
+
+There is also a utility function to import from this module:
+- `addEntry`
 
 ### Install
 
@@ -53,19 +58,19 @@ client.record.getListP('users').then(list => {
     }));
 });
 
-// Usual functions still work
+// Default functions still work
 client.record.getList('article/x35b/comments');
 ```
 
 ## Promisification API
 
-The promises will be resolved with the same argument(s) as the default client callbacks would be invoked with. See [the deepstream JS client documentation](https://deepstreamhub.com/docs/client-js/client/).
+The promises will be resolved with the same argument(s) as the default client callbacks would get (or the `whenReady` when applicable). See [the deepstream JS client documentation](https://deepstreamhub.com/docs/client-js/client/).
 
 ### `loginP`
 
 Straightforward promisification of login. See **Example 1** above.
 
-**Note:** Old login still works, and the common chaining of client object creation and login is therefore still possible:
+**Note:** Old login still works, you can still do the standard line:
 
 ```javascript
 const client = getClient('localhost:6020').login({}, success => console.log(success));
@@ -76,7 +81,9 @@ const client = getClient('localhost:6020').login({}, success => console.log(succ
 Promisification of `record.getRecord`. No callback, instead `.then` and `.catch`.
 
 ```javascript
-client.record.getRecordP(name).then(..).catch(..);
+client.record.getRecordP(name)
+  .then(dsRecord => ...)
+  .catch(error => ...);
 ```
 
 ### `record.getListP`
@@ -84,7 +91,9 @@ client.record.getRecordP(name).then(..).catch(..);
 Promisification of `record.getList`. No callback, instead `.then` and `.catch`.
 
 ```javascript
-client.record.getListP(name).then(..).catch(..);
+client.record.getListP(name)
+  .then(dsList => ...)
+  .catch(error => ...);
 ```
 
 ### `record.snapshotP`
@@ -92,7 +101,9 @@ client.record.getListP(name).then(..).catch(..);
 Promisification of `record.snapshot`. No callback, instead `.then` and `.catch`.
 
 ```javascript
-client.record.snapshotP(name).then(..).catch(..);
+client.record.snapshotP(name)
+  .then(record => ...)
+  .catch(error => ...);
 ```
 
 ### `record.hasP`
@@ -100,7 +111,9 @@ client.record.snapshotP(name).then(..).catch(..);
 Promisification of `record.has`. No callback, instead `.then` and `.catch`.
 
 ```javascript
-client.record.hasP(name).then(..).catch(..);
+client.record.hasP(name)
+  .then(hasRecord => ...)
+  .catch(error => ...);
 ```
 
 ### `rpc.makeP`
@@ -108,7 +121,9 @@ client.record.hasP(name).then(..).catch(..);
 Promisification of `rpc.makeP`. No callback, instead `.then` and `.catch`.
 
 ```javascript
-client.rpc.makeP(name, data).then(..).catch(..);
+client.rpc.makeP(name, data)
+  .then(result => ...)
+  .catch(error => ...);
 ```
 
 ## Additional API functions
@@ -118,7 +133,9 @@ client.rpc.makeP(name, data).then(..).catch(..);
 Additional method that does a `.has`-check before `.getRecord` to get a record handler without implicit record creation (Compare with `snapshot` that fails if the record does not exist, but returns the actual record instead of a record handler). It rejects the promise if the record does not exist.
 
 ```javascript
-client.record.getExistingRecordP(name).then(..).catch(..);
+client.record.getExistingRecordP(name)
+  .then(dsRecord => ...)
+  .catch(error => ...);
 ```
 
 ### `record.getExistingListP`
@@ -126,22 +143,28 @@ client.record.getExistingRecordP(name).then(..).catch(..);
 Like `getExistingRecordP` above, but for List.
 
 ```javascript
-client.record.getExistingListP(name).then(..).catch(..);
+client.record.getExistingListP(name)
+  .then(dsList => ...)
+  .catch(error => ...);
 ```
 
 ### `record.listedRecordP`
+
+DEPRICATED. Use `record.getListedRecordP`
+
+### `record.getListedRecordP`
 
 In case you often end up with the structure of having a list of some type of records as the "parent" of those records. For example a list of all books at `books` and the books at `books/one-child`, `books/way-of-the-peaceful-warrior` and `books/bilbo`.
 
 Supports different merge strategies. Default is a shallow merge.
 
 #### Arguments
-- `listPath:string`  is the path to the list.
-- `recordId:string`  is the ID of the record.
-- `obj:Object`  is an object with either an entire record or updates to merge into it.
-- `deepMerge:boolean` (false)  will turn on deep merge of `obj` into the record.
-- `overwrite:boolean` (false)  will replace the record with `obj`.
-- `fullPathList:boolean` (true)  will store the full record path in the list, otherwise only the record ID.
+- `listPath: string`  is the path to the list.
+- `recordId: string`  is the ID of the record.
+- `obj: Object`  is an object with either an entire record or updates to merge into it.
+- `deepMerge: boolean` (false)  will turn on deep merge of `obj` into the record.
+- `overwrite: boolean` (false)  will replace the record with `obj`.
+- `fullPathList: boolean` (true)  will store the full record path in the list, otherwise only the record ID.
 
 ```javascript
 client.record.listedRecordP('books', 'bilbo', { author: 'J R R Tolkien', title: 'Bilbo' })
@@ -162,15 +185,35 @@ client.record.listedRecordP('books', 'bilbo', { author: 'J R R Tolkien', title: 
 Update an existing record, with possibility of different merge strategies. Default is a shallow merge.
 
 #### Arguments
-- `name:string`  is the name/path of the record.
-- `obj:Object`  is an object with either an entire record or updates to merge into it.
-- `deepMerge:boolean` (false)  will turn on deep merge of `obj` into the record.
-- `overwrite:boolean` (false)  will replace the record with `obj`.
+- `name: string`  is the name/path of the record.
+- `obj: Object`  is an object with either an entire record or updates to merge into it.
+- `deepMerge: boolean` (false)  will turn on deep merge of `obj` into the record.
+- `overwrite: boolean` (false)  will replace the record with `obj`.
 
 ```javascript
 client.record.setExistingRecordP('books/bilbo', { author: 'John Ronald Reuel Tolkien' })
-  .then(..)
-  .catch(..)
+  .then(dsRecord => ...)
+  .catch(error => ...);
+```
+
+## Utility functions
+
+These are not extensions of the client object, but freely importable functions.
+
+### `addEntry`
+
+An alternative way to add entries to a deepstream list, that prevents duplicates.
+
+#### Arguments
+- `list: Object`  A DS List object.
+- `str: string`  The entry to add.
+
+```javascript
+import { addEntry } from 'extended-ds-client';
+
+client.record.getExistingListPT('books')
+  .then(dsList => addEntry(dsList, 'bilbo'));
+  .catch(error => ...);
 ```
 
 ## Licence
