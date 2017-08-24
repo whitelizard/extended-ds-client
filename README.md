@@ -16,6 +16,7 @@ These are the basic additional functions:
 - `record.getExistingListP`
 - `record.listedRecordP`
 - `record.setExistingRecordP`
+- `rpc.makeP`
 
 ### Install
 
@@ -100,6 +101,14 @@ Promisification of `record.has`. No callback, instead `.then` and `.catch`.
 client.record.hasP(name).then(..).catch(..);
 ```
 
+### `rpc.makeP`
+
+Promisification of `rpc.makeP`. No callback, instead `.then` and `.catch`.
+
+```javascript
+client.rpc.makeP(name, data).then(..).catch(..);
+```
+
 ## Additional API functions
 
 ### `record.getExistingRecordP`
@@ -121,6 +130,7 @@ client.record.getExistingListP(name).then(..).catch(..);
 ### `record.listedRecordP`
 
 In case you often end up with the structure of having a list of some type of records as the "parent" of those records. For example a list of all books at `books` and the books at `books/one-child`, `books/way-of-the-peaceful-warrior` and `books/bilbo`.
+
 Supports different merge strategies. Default is a shallow merge.
 
 #### Arguments

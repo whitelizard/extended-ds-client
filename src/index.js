@@ -108,6 +108,15 @@ function hasP(name) {
   );
 }
 
+function makeP(name, data) {
+  return new Promise((resolve, reject) =>
+    this.rpc.make(name, data, (error, result) => {
+      if (error) reject(new Error(error));
+      else resolve(result);
+    }),
+  );
+}
+
 export default function getClient(url, options) {
   const c = deepstream(url, options);
   c.record.getRecordP = getRecordP.bind(c);
@@ -120,6 +129,7 @@ export default function getClient(url, options) {
   c.record.removeFromListP = removeFromListP.bind(c);
   c.record.listedRecordP = listedRecordP.bind(c);
   c.loginP = loginP.bind(c);
+  c.rpc.makeP = makeP.bind(c);
   return c;
 }
 
@@ -148,6 +158,9 @@ export function getClientWithTenant(url, options, tenant = 'demo') {
   c.record.getExistingListPT = withTenant.bind(c, 'getExistingListP');
   c.record.listedRecordPT = withTenant.bind(c, 'listedRecordP');
   c.record.setExistingRecordPT = withTenant.bind(c, 'setExistingRecordP');
+  c.rpc.makePT = function (name, data) {
+    return this.rpc.makeP(`${this.getTenant()}/${name}`, data);
+  };
   return c;
 }
 
