@@ -8,8 +8,8 @@ Creating a client through this package will give you additional methods on the c
 
 These are the additional functions:
 - [`loginP`](#loginp)
-- [`record.getRecordP`](#record.getrecordp)
-- [`record.getListP`](#record.getristp)
+- [`record.getRecordP`](#record-getrecordp)
+- [`record.getListP`](#recordgetristp)
 - [`record.snapshotP`](#record.snapshotp)
 - [`record.hasP`](#record.hasp)
 - [`record.getExistingRecordP`](#record.getexistingrecordp)
