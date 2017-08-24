@@ -1,6 +1,6 @@
 {
   "name": "extended-ds-client",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "description": "Promise based additional methods on the deepstream js client",
   "main": "index.js",
   "scripts": {
