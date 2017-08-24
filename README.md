@@ -1,6 +1,6 @@
 # Extended Deepstream client
 
-Promise based deepstream client. It's basically just the *deepstream.io-client-js* with basic calls promisified plus some extra methods.
+Promise based deepstream client. It's basically just the [`deepstream.io-client-js`](https://www.npmjs.com/package/deepstream.io-client-js). with basic calls promisified plus some extra methods.
 
 ## Overview
 
@@ -58,6 +58,8 @@ client.record.getList('article/x35b/comments');
 ```
 
 ## Promisification API
+
+The promises will be resolved with the same argument(s) as the default client callbacks would be invoked with. See [the deepstream JS client documentation](https://deepstreamhub.com/docs/client-js/client/).
 
 ### `loginP`
 
@@ -134,12 +136,12 @@ In case you often end up with the structure of having a list of some type of rec
 Supports different merge strategies. Default is a shallow merge.
 
 #### Arguments
-- `listPath:string` is the path to the list.
-- `recordId:string` is the ID of the record.
-- `obj:Object` is an object with either an entire record or updates to merge into it.
-- `deepMerge:boolean` (false) will turn on deep merge of `obj` into the record.
-- `overwrite:boolean` (false) will replace the record with `obj`.
-- `fullPathList:boolean` (true) will store the full record path in the list.
+- `listPath:string`  is the path to the list.
+- `recordId:string`  is the ID of the record.
+- `obj:Object`  is an object with either an entire record or updates to merge into it.
+- `deepMerge:boolean` (false)  will turn on deep merge of `obj` into the record.
+- `overwrite:boolean` (false)  will replace the record with `obj`.
+- `fullPathList:boolean` (true)  will store the full record path in the list, otherwise only the record ID.
 
 ```javascript
 client.record.listedRecordP('books', 'bilbo', { author: 'J R R Tolkien', title: 'Bilbo' })
@@ -160,13 +162,15 @@ client.record.listedRecordP('books', 'bilbo', { author: 'J R R Tolkien', title: 
 Update an existing record, with possibility of different merge strategies. Default is a shallow merge.
 
 #### Arguments
-- `name:string` is the name/path of the record.
-- `obj:Object` is an object with either an entire record or updates to merge into it.
-- `deepMerge:boolean` (false) will turn on deep merge of `obj` into the record.
-- `overwrite:boolean` (false) will replace the record with `obj`.
+- `name:string`  is the name/path of the record.
+- `obj:Object`  is an object with either an entire record or updates to merge into it.
+- `deepMerge:boolean` (false)  will turn on deep merge of `obj` into the record.
+- `overwrite:boolean` (false)  will replace the record with `obj`.
 
 ```javascript
-client.record.setExistingRecordP('books/bilbo', { author: 'John Ronald Reuel Tolkien' }).then(...).catch(...)
+client.record.setExistingRecordP('books/bilbo', { author: 'John Ronald Reuel Tolkien' })
+  .then(..)
+  .catch(..)
 ```
 
 ## Licence
