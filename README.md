@@ -7,7 +7,7 @@ Promise based deepstream client. It's basically just the [`deepstream.io-client-
 Creating a client through this package will give you additional methods on the client object, leaving everything from the default client untouched (getRecord, getList etc).
 
 These are the additional functions:
-- `loginP`
+- [`loginP`](#loginp)
 - `record.getRecordP`
 - `record.getListP`
 - `record.snapshotP`
@@ -27,7 +27,7 @@ There is also a utility function to import from this module:
 
 `npm i -S extended-ds-client`
 
-### Example 1
+### Example
 
 ```javascript
 import getClient from 'extended-ds-client';
@@ -158,20 +158,6 @@ In case you often end up with the structure of having a list of some type of rec
 
 Supports different merge strategies. Default is a shallow merge.
 
-#### Arguments
-- `listPath: string`
-  * The path to the list.
-- `recordId: string`
-  * The ID of the record.
-- `obj: Object`
-  * An object with either an entire record or updates to merge into it.
-- `deepMerge: boolean` (false)
-  * Will turn on deep merge of `obj` into the record.
-- `overwrite: boolean` (false)
-  * Will replace the record with `obj`.
-- `fullPathList: boolean` (true)
-  * Will store the full record path in the list, otherwise only the record ID.
-
 ```javascript
 client.record.getListedRecordP('books', 'bilbo', { author: 'J R R Tolkien', title: 'Bilbo' })
   .then(([id, created]) => {
@@ -186,25 +172,32 @@ client.record.getListedRecordP('books', 'bilbo', { author: 'J R R Tolkien', titl
   });
 ```
 
+| Argument | Type | Default | Description |
+| -------- | ---- | ------- | ----------- |
+| `listPath` | `string` | | The path to the list. |
+| `recordId` | `string` | | The ID of the record. |
+| `obj` | `Object` | | An object with either an entire record or updates to merge into it. |
+| `deepMerge` | `boolean` | `false` | Will turn on deep merge of `obj` into the record. |
+| `overwrite` | `boolean` | `false` | Will replace the record with `obj`. |
+| `fullPathList` | `boolean` | `true` | Will store the full record path in the list, otherwise only the record ID. |
+
+
 ### `record.setExistingRecordP`
 
 Update an existing record, with possibility of different merge strategies. Default is a shallow merge.
-
-#### Arguments
-- `name: string`
-  * Is the name/path of the record.
-- `obj: Object`
-  * Is an object with either an entire record or updates to merge into it.
-- `deepMerge: boolean` (false)
-  * Will turn on deep merge of `obj` into the record.
-- `overwrite: boolean` (false)
-  * Will replace the record with `obj`.
 
 ```javascript
 client.record.setExistingRecordP('books/bilbo', { author: 'John Ronald Reuel Tolkien' })
   .then(dsRecord => ...)
   .catch(error => ...);
 ```
+
+| Argument | Type | Default | Description |
+| -------- | ---- | ------- | ----------- |
+| `name` | `string` | | Is the name/path of the record. |
+| `obj` | `Object` | | Is an object with either an entire record or updates to merge into it. |
+| `deepMerge` | `boolean` | false | Will turn on deep merge of `obj` into the record. |
+| `overwrite` | `boolean` | false | Will replace the record with `obj`. |
 
 ## Utility functions
 
@@ -214,12 +207,6 @@ These are not extensions of the client object, but freely importable functions.
 
 An alternative way to add entries to a deepstream list, that **prevents duplicates**.
 
-#### Arguments
-- `list: Object`
-  * A DS List object.
-- `str: string`
-  * The entry to add.
-
 ```javascript
 import { addEntry } from 'extended-ds-client';
 
@@ -227,6 +214,11 @@ client.record.getExistingListPT('books')
   .then(dsList => addEntry(dsList, 'bilbo'));
   .catch(error => ...);
 ```
+
+| Argument | Type | Default | Description |
+| -------- | ---- | ------- | ----------- |
+| `list`| `Object` | | A DS List object. |
+| `str`| `string` | | The entry to add. |
 
 ## Licence
 MIT
