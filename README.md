@@ -8,15 +8,15 @@ Creating a client through this package will give you additional methods on the c
 
 These are the additional functions:
 - [`loginP`](#loginp)
-- [`record.getRecordP`](#record-getrecordp)
-- [`record.getListP`](#recordgetristp)
-- [`record.snapshotP`](#record%2Esnapshotp)
-- [`record.hasP`](#record.hasp)
-- [`record.getExistingRecordP`](#record.getexistingrecordp)
-- [`record.getExistingListP`](#record.getexistinglistp)
-- [`record.getListedRecordP`](#record.getlistedrecordp) (previously `record.listedRecordP`)
-- [`record.setExistingRecordP`](#record.setexistingrecordp)
-- [`rpc.makeP`](#rpc.makep)
+- [`record.getRecordP`](#recordgetrecordp)
+- [`record.getListP`](#recordgetlistp)
+- [`record.snapshotP`](#recordsnapshotp)
+- [`record.hasP`](#recordhasp)
+- [`record.getExistingRecordP`](#recordgetexistingrecordp)
+- [`record.getExistingListP`](#recordgetexistinglistp)
+- [`record.getListedRecordP`](#recordgetlistedrecordp) (previously `record.listedRecordP`)
+- [`record.setExistingRecordP`](#recordsetexistingrecordp)
+- [`rpc.makeP`](#rpcmakep)
 
 In case of rejection on any of these functions, the rejected argument is always an instance of Error.
 
