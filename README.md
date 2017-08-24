@@ -27,7 +27,7 @@ There is also a utility function to import from this module:
 
 `npm i -S extended-ds-client`
 
-### Example
+### Example 1
 
 ```javascript
 import getClient from 'extended-ds-client';
@@ -150,7 +150,7 @@ client.record.getExistingListP(name)
 
 ### `record.listedRecordP`
 
-DEPRICATED. Use `record.getListedRecordP`
+**DEPRICATED**. Use `record.getListedRecordP`
 
 ### `record.getListedRecordP`
 
@@ -196,8 +196,8 @@ client.record.setExistingRecordP('books/bilbo', { author: 'John Ronald Reuel Tol
 | -------- | ---- | ------- | ----------- |
 | `name` | `string` | | Is the name/path of the record. |
 | `obj` | `Object` | | Is an object with either an entire record or updates to merge into it. |
-| `deepMerge` | `boolean` | false | Will turn on deep merge of `obj` into the record. |
-| `overwrite` | `boolean` | false | Will replace the record with `obj`. |
+| `deepMerge` | `boolean` | `false` | Will turn on deep merge of `obj` into the record. |
+| `overwrite` | `boolean` | `false` | Will replace the record with `obj`. |
 
 ## Utility functions
 
