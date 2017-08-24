@@ -160,17 +160,17 @@ Supports different merge strategies. Default is a shallow merge.
 
 #### Arguments
 - `listPath: string`
-..- The path to the list.
+..* The path to the list.
 - `recordId: string`
-..- The ID of the record.
+..* The ID of the record.
 - `obj: Object`
-..- An object with either an entire record or updates to merge into it.
+..* An object with either an entire record or updates to merge into it.
 - `deepMerge: boolean` (false)
-..- Will turn on deep merge of `obj` into the record.
+..* Will turn on deep merge of `obj` into the record.
 - `overwrite: boolean` (false)
-..- Will replace the record with `obj`.
+..* Will replace the record with `obj`.
 - `fullPathList: boolean` (true)
-..- Will store the full record path in the list, otherwise only the record ID.
+..* Will store the full record path in the list, otherwise only the record ID.
 
 ```javascript
 client.record.getListedRecordP('books', 'bilbo', { author: 'J R R Tolkien', title: 'Bilbo' })
@@ -192,13 +192,13 @@ Update an existing record, with possibility of different merge strategies. Defau
 
 #### Arguments
 - `name: string`
-..- Is the name/path of the record.
+..* Is the name/path of the record.
 - `obj: Object`
-..- Is an object with either an entire record or updates to merge into it.
+..* Is an object with either an entire record or updates to merge into it.
 - `deepMerge: boolean` (false)
-..- Will turn on deep merge of `obj` into the record.
+..* Will turn on deep merge of `obj` into the record.
 - `overwrite: boolean` (false)
-..- Will replace the record with `obj`.
+..* Will replace the record with `obj`.
 
 ```javascript
 client.record.setExistingRecordP('books/bilbo', { author: 'John Ronald Reuel Tolkien' })
@@ -216,9 +216,9 @@ An alternative way to add entries to a deepstream list, that **prevents duplicat
 
 #### Arguments
 - `list: Object`
-..- A DS List object.
+..* A DS List object.
 - `str: string`
-..- The entry to add.
+..* The entry to add.
 
 ```javascript
 import { addEntry } from 'extended-ds-client';
