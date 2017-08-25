@@ -127,8 +127,9 @@ export default function getClient(url, options) {
   c.record.snapshotP = snapshotP.bind(c);
   c.record.hasP = hasP.bind(c);
   c.record.removeFromListP = removeFromListP.bind(c);
-  c.record.listedRecordP = listedRecordP.bind(c);
-  c.record.getListedRecordP = c.record.listedRecordP;
+  c.record.setListedRecordP = listedRecordP.bind(c);
+  c.record.getListedRecordP = c.record.setListedRecordP;
+  c.record.listedRecordP = c.record.setListedRecordP;
   c.loginP = loginP.bind(c);
   c.rpc.makeP = makeP.bind(c);
   return c;
@@ -157,8 +158,9 @@ export function getClientWithTenant(url, options, tenant = 'demo') {
   }.bind(c);
   c.record.getExistingRecordPT = withTenant.bind(c, 'getExistingRecordP');
   c.record.getExistingListPT = withTenant.bind(c, 'getExistingListP');
-  c.record.listedRecordPT = withTenant.bind(c, 'listedRecordP');
-  c.record.getListedRecordPT = c.record.listedRecordPT;
+  c.record.setListedRecordPT = withTenant.bind(c, 'listedRecordP');
+  c.record.getListedRecordPT = c.record.setListedRecordPT;
+  c.record.listedRecordPT = c.record.setListedRecordPT;
   c.record.setExistingRecordPT = withTenant.bind(c, 'setExistingRecordP');
   c.rpc.makePT = function (name, data) {
     return this.rpc.makeP(`${this.getTenant()}/${name}`, data);

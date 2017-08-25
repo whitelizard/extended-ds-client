@@ -14,7 +14,7 @@ These are the additional functions:
 - [`record.hasP`](#recordhasp)
 - [`record.getExistingRecordP`](#recordgetexistingrecordp)
 - [`record.getExistingListP`](#recordgetexistinglistp)
-- [`record.getListedRecordP`](#recordgetlistedrecordp) (previously `record.listedRecordP`)
+- [`record.setListedRecordP`](#recordsetlistedrecordp) (previously `record.listedRecordP`)
 - [`record.setExistingRecordP`](#recordsetexistingrecordp)
 - [`rpc.makeP`](#rpcmakep)
 
@@ -150,16 +150,16 @@ client.record.getExistingListP(name)
 
 ### `record.listedRecordP`
 
-**DEPRICATED**. Use `record.getListedRecordP`
+**DEPRICATED**. Use `record.setListedRecordP`
 
-### `record.getListedRecordP`
+### `record.setListedRecordP`
 
 In case you often end up with the structure of having a list of some type of records as the "parent" of those records. For example a list of all books at `books` and the books at `books/one-child`, `books/way-of-the-peaceful-warrior` and `books/bilbo`.
 
 Supports different merge strategies. Default is a shallow merge.
 
 ```javascript
-client.record.getListedRecordP('books', 'bilbo', { author: 'J R R Tolkien', title: 'Bilbo' })
+client.record.setListedRecordP('books', 'bilbo', { author: 'J R R Tolkien', title: 'Bilbo' })
   .then(([id, created]) => {
     console.log(id, created); // => bilbo true (if it did not exist, otherwise false)
     client.record.getListP('books').then(list => {
