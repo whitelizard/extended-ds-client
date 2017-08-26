@@ -14,7 +14,7 @@ These are the additional functions:
 - [`record.hasP`](#recordhasp)
 - [`record.getExistingRecordP`](#recordgetexistingrecordp)
 - [`record.getExistingListP`](#recordgetexistinglistp)
-- [`record.setListedRecordP`](#recordsetlistedrecordp) (previously `record.listedRecordP`)
+- [`record.setListedRecordP`](#recordsetlistedrecordp) (previously `listedRecordP`)
 - [`record.setExistingRecordP`](#recordsetexistingrecordp)
 - [`rpc.makeP`](#rpcmakep)
 
