@@ -1,7 +1,9 @@
 import deepstream from 'deepstream.io-client-js';
 import merge from 'lodash.merge';
 
-export const statuses = deepstream.CONSTANTS.CONNECTION_STATE;
+export const CONSTANTS = deepstream.CONSTANTS;
+export const MERGE_STRATEGIES = deepstream.MERGE_STRATEGIES;
+export const statuses = deepstream.CONSTANTS.CONNECTION_STATE; // Depricated
 
 /**
  * Add entry to a DS List (avoiding duplicates).
@@ -35,6 +37,13 @@ function getExistingP(type, pathStr) {
 function removeFromListP(listPath, id) {
   return this.record.getExistingListP(listPath).then(l => {
     l.removeEntry(id);
+    return l;
+  });
+}
+
+function addToListP(listPath, id) {
+  return this.record.getExistingListP(listPath).then(l => {
+    addEntry(l, id);
     return l;
   });
 }
@@ -117,7 +126,7 @@ function makeP(name, data) {
   );
 }
 
-function polyfill(obj, key, value) {
+export function polyfill(obj, key, value) {
   if (typeof obj[key] === 'undefined') {
     // eslint-disable-next-line
     obj[key] = value;
@@ -133,6 +142,7 @@ export default function getClient(url, options) {
   polyfill(c.record, 'setExistingRecordP', setExistingRecordP.bind(c));
   polyfill(c.record, 'snapshotP', snapshotP.bind(c));
   polyfill(c.record, 'hasP', hasP.bind(c));
+  polyfill(c.record, 'addToListP', addToListP.bind(c));
   polyfill(c.record, 'removeFromListP', removeFromListP.bind(c));
   polyfill(c.record, 'setListedRecordP', setListedRecordP.bind(c));
   polyfill(c, 'loginP', loginP.bind(c));
@@ -154,17 +164,22 @@ function withTenant(func, name, ...args) {
 
 export function getClientWithTenant(url, options, tenant = 'demo') {
   const c = getClient(url, options);
-  c.getTenant = function () {
-    return this;
-  }.bind(tenant); // non-closure getter
+  polyfill(
+    c,
+    'getTenant',
+    function () {
+      return this;
+    }.bind(tenant),
+  ); // non-closure getter
   polyfill(c.record, 'getRecordPT', withTenant.bind(c, 'getRecordP'));
-  polyfill(c.record, 'getRecordT', withTenant.bind(c, 'getRecord'));
+  // polyfill(c.record, 'getRecordT', withTenant.bind(c, 'getRecord'));
   polyfill(c.record, 'getListPT', withTenant.bind(c, 'getListP'));
-  polyfill(c.record, 'getListT', withTenant.bind(c, 'getList'));
+  // polyfill(c.record, 'getListT', withTenant.bind(c, 'getList'));
   polyfill(c.record, 'snapshotPT', withTenant.bind(c, 'snapshotP'));
-  polyfill(c.record, 'snapshotT', withTenant.bind(c, 'snapshot'));
+  // polyfill(c.record, 'snapshotT', withTenant.bind(c, 'snapshot'));
   polyfill(c.record, 'hasPT', withTenant.bind(c, 'hasP'));
-  polyfill(c.record, 'hasT', withTenant.bind(c, 'has'));
+  // polyfill(c.record, 'hasT', withTenant.bind(c, 'has'));
+  polyfill(c.record, 'addToListPT', withTenant.bind(c, 'addToListP'));
   polyfill(c.record, 'removeFromListPT', withTenant.bind(c, 'removeFromListP'));
   polyfill(
     c.record,
