@@ -1,6 +1,6 @@
 # Extended Deepstream client
 
-Promise based deepstream client. It's basically just the [`deepstream.io-client-js`](https://www.npmjs.com/package/deepstream.io-client-js) with basic calls promisified, plus some extra methods.
+Promise based deepstream client. It's basically just the [`deepstream.io-client-js`](https://www.npmjs.com/package/deepstream.io-client-js) with basic calls promisified, plus some extra methods. All methods are added as polyfills.
 
 ## Overview
 
@@ -16,6 +16,8 @@ These are the additional functions:
 - [`record.getExistingListP`](#recordgetexistinglistp)
 - [`record.setListedRecordP`](#recordsetlistedrecordp) (previously `listedRecordP`)
 - [`record.setExistingRecordP`](#recordsetexistingrecordp)
+- [`record.addToListP`](#recordaddtolistp)
+- [`record.removeFromListP`](#recordremovefromlistp)
 - [`rpc.makeP`](#rpcmakep)
 
 In case of rejection on any of these functions, the rejected argument is always an instance of Error.
@@ -198,6 +200,36 @@ client.record.setExistingRecordP('books/bilbo', { author: 'John Ronald Reuel Tol
 | `obj` | `Object` | | Is an object with either an entire record or updates to merge into it. |
 | `deepMerge` | `boolean` | `false` | Will turn on deep merge of `obj` into the record. |
 | `overwrite` | `boolean` | `false` | Will replace the record with `obj`. |
+
+### `record.addToListP`
+
+Add entry to an existing list, if it is not already there.
+
+```javascript
+client.record.addToListP('books', 'bilbo')
+  .then(dsList => ...)
+  .catch(error => ...);
+```
+
+| Argument | Type | Default | Description |
+| -------- | ---- | ------- | ----------- |
+| `listPath` | `string` | | Is the name/path of the record. |
+| `id` | `string` | | Entry to add. |
+
+### `record.removeFromListP`
+
+Remove entry to an existing list, if it is not already there.
+
+```javascript
+client.record.removeFromListP('books', 'bilbo')
+  .then(dsList => ...)
+  .catch(error => ...);
+```
+
+| Argument | Type | Default | Description |
+| -------- | ---- | ------- | ----------- |
+| `listPath` | `string` | | Is the name/path of the record. |
+| `id` | `string` | | Entry to remove. |
 
 ## Utility functions
 

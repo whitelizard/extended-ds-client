@@ -1,7 +1,7 @@
 {
   "name": "extended-ds-client",
   "version": "3.0.0",
-  "description": "Promise based additional methods on the deepstream js client",
+  "description": "Promise based additional methods on the deepstream js client (polyfilled)",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -19,8 +19,7 @@
   "homepage": "https://github.com/whitelizard/extended-ds-client#readme",
   "dependencies": {
     "deepstream.io-client-js": "^2.2.1",
-    "lodash.merge": "^4.6.0",
-    "max-frequency-caller": "^1.0.0"
+    "lodash.merge": "^4.6.0"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
