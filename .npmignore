@@ -1,0 +1,7 @@
+/node_modules
+/.babelrc
+/.editorconfig
+/.eslint
+/.gitignore
+/test
+/src
