@@ -25,11 +25,11 @@ function getListP(name) {
 }
 
 function getExistingP(type, pathStr) {
-  return new Promise((resolve, reject) =>
+  return new Promise(resolve =>
     this.record.has(pathStr, (error, hasRecord) => {
-      if (error) reject(new Error(error));
+      if (error) throw new Error(error);
       if (hasRecord) this.record[`get${type}`](pathStr).whenReady(r => resolve(r));
-      else reject(new Error(`${type} does not exist: ${pathStr}`));
+      else throw new Error(`${type} does not exist: ${pathStr}`);
     }),
   );
 }
@@ -49,9 +49,9 @@ function addToListP(listPath, id) {
 }
 
 function snapshotP(name) {
-  return new Promise((resolve, reject) =>
+  return new Promise(resolve =>
     this.record.snapshot(name, (error, data) => {
-      if (error) reject(new Error(error));
+      if (error) throw new Error(error);
       else resolve(data);
     }),
   );
@@ -100,27 +100,27 @@ function setExistingRecordP(name, obj, deepMerge, overwrite) {
 }
 
 function loginP(authParams) {
-  return new Promise((resolve, reject) =>
+  return new Promise(resolve =>
     this.login(authParams, (success, data) => {
       if (success) resolve(data);
-      else reject(new Error(data));
+      else throw new Error(data);
     }),
   );
 }
 
 function hasP(name) {
-  return new Promise((resolve, reject) =>
+  return new Promise(resolve =>
     this.record.has(name, (error, hasRecord) => {
-      if (error) reject(new Error(error));
+      if (error) throw new Error(error);
       else resolve(hasRecord);
     }),
   );
 }
 
 function makeP(name, data) {
-  return new Promise((resolve, reject) =>
+  return new Promise(resolve =>
     this.rpc.make(name, data, (error, result) => {
-      if (error) reject(new Error(error));
+      if (error) throw new Error(error);
       else resolve(result);
     }),
   );
