@@ -120,3 +120,9 @@ test('p.getRecord', () =>
     }
     return true;
   }));
+
+test('shutdown', t => {
+  c.close();
+  server.stop();
+  t.end();
+});
