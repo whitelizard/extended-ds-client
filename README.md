@@ -210,7 +210,7 @@ client.record.p.setListedRecord('books', 'hobbit', { author: 'J R R Tolkien', ti
     client.record.p.getList('books').then(list => {
       list.getEntries().forEach(path => {
         client.record.p.snapshot(path).then(book => {
-          console.log(book.author, '-', book.title); // => J R R Tolkien - Bilbo
+          console.log(book.author, '-', book.title); // => J R R Tolkien - The Hobbit
         });
       });
     });
