@@ -7,27 +7,33 @@ Promise based deepstream client. It's basically just the [`deepstream.io-client-
 Creating a client through this package will give you additional methods on the client object, leaving everything from the default client untouched (getRecord, getList etc).
 
 These are the additional functions:
-- [`loginP`](#loginp)
-- [`record.getRecordP`](#recordgetrecordp)
-- [`record.getListP`](#recordgetlistp)
-- [`record.snapshotP`](#recordsnapshotp)
-- [`record.hasP`](#recordhasp)
-- [`record.getExistingRecordP`](#recordgetexistingrecordp)
-- [`record.getExistingListP`](#recordgetexistinglistp)
-- [`record.setListedRecordP`](#recordsetlistedrecordp) (previously `listedRecordP`)
-- [`record.setExistingRecordP`](#recordsetexistingrecordp)
-- [`record.addToListP`](#recordaddtolistp)
-- [`record.removeFromListP`](#recordremovefromlistp)
-- [`rpc.makeP`](#rpcmakep)
+- [`p.login`](#plogin) (alias `loginP`)
+- [`record.p.getRecord`](#recordpgetrecord) (alias `record.getRecordP`)
+- [`record.p.getList`](#recordpgetlist) (alias `record.getListP`)
+- [`record.p.snapshot`](#recordpsnapshot) (alias `record.snapshotP`)
+- [`record.p.has`](#recordphas) (alias `record.hasP`)
+- [`record.p.getExistingRecord`](#recordpgetexistingrecord) (alias `record.getExistingRecordP`)
+- [`record.p.getExistingList`](#recordpgetexistinglist) (alias `record.getExistingListP`)
+- [`record.p.setListedRecord`](#recordpsetlistedrecord) (alias `record.setListedRecordP`)
+- [`record.p.setExistingRecord`](#recordpsetexistingrecord) (alias `record.setExistingRecordP`)
+- [`record.p.addToList`](#recordpaddtolist) (alias `record.addToListP`)
+- [`record.p.removeFromList`](#recordpremovefromlist) (alias `record.removeFromListP`)
+- [`rpc.p.make`](#rpcpmake) (alias `rpc.makeP`)
 
-In case of rejection on any of these functions, the rejected argument is always an instance of Error.
+In case of *rejection* on any of these functions, the rejected argument is always an instance of **Error**.
 
 There is also a utility function to import from this module:
-- [`addEntry`](#addentry)
+- [`addEntry`](#addentry) (prevents duplicates)
+
+Tunneling export of `CONSTANTS` & `MERGE_STRATEGIES` (so that you don't also have to import deepstream.io-client-js for these).
+
+Please create an Issue in github if you feel something is missing!
 
 ### Install
 
-`npm i -S extended-ds-client`
+```
+npm i -S extended-ds-client
+```
 
 ### Example 1
 
@@ -36,7 +42,7 @@ import getClient from 'extended-ds-client';
 
 const client = getClient('localhost:6020');
 
-client.loginP({})
+client.p.login({})
   .then(data => {
     console.log('Successful login.', data);
   })
@@ -45,12 +51,12 @@ client.loginP({})
   })
 
 const users = {};
-client.record.getListP('users').then(list => {
+client.record.p.getList('users').then(list => {
   // With the list of entries, map each entry to a record promise and
   // wait for all to get finished:
   Promise.all(
     list.getEntries().map(
-      path => client.record.getRecordP(path)
+      path => client.record.p.getRecord(path)
     )
   )
     .then(records => records.forEach(record => {
@@ -61,112 +67,149 @@ client.record.getListP('users').then(list => {
 });
 
 // Default functions still work
-client.record.getList('article/x35b/comments');
+client.record.getList('article/x35b/comments').whenReady(l => {
+  // ...
+});
+```
+
+### Example 2
+
+```javascript
+import getClient, { CONSTANTS, ds } from 'extended-ds-client';
+
+ds.client = getClient('localhost:6020'); // use singleton feature
+
+client.loginP({}); // using alias pattern
+
+console.log(CONSTANTS); // MERGE_STRATEGIES is also available to import
+```
+
+### Example 3
+
+```javascript
+import { ds } from 'extended-ds-client';
+
+// Given Exmple 2 file was imported before this one
+
+ds.client.record.p.getExistingRecord('records/record1').then(r => {
+  // ...
+});
 ```
 
 ## Promisification API
 
 The promises will be resolved with the same argument(s) as the default client callbacks would get (or the `whenReady` when applicable). See [the deepstream JS client documentation](https://deepstreamhub.com/docs/client-js/client/).
 
-### `loginP`
+### `p.login`
+
+Alias: `loginP`
 
 Straightforward promisification of login. See **Example 1** above.
 
-**Note:** Old login still works, you can still do the standard line:
+**Note:** Default login still works, you can still do the standard line with callback:
+`client.login({}, success => console.log(success));`
 
-```javascript
-const client = getClient('localhost:6020').login({}, success => console.log(success));
-```
+### `record.p.getRecord`
 
-### `record.getRecordP`
+Alias: `record.getRecordP`
 
 Promisification of `record.getRecord`. No callback, instead `.then` and `.catch`.
 
 ```javascript
-client.record.getRecordP(name)
+client.record.p.getRecord(name)
   .then(dsRecord => ...)
   .catch(error => ...);
 ```
 
-### `record.getListP`
+### `record.p.getList`
+
+Alias: `record.getListP`
 
 Promisification of `record.getList`. No callback, instead `.then` and `.catch`.
 
 ```javascript
-client.record.getListP(name)
+client.record.p.getList(name)
   .then(dsList => ...)
   .catch(error => ...);
 ```
 
-### `record.snapshotP`
+### `record.p.snapshot`
+
+Alias: `record.snapshotP`
 
 Promisification of `record.snapshot`. No callback, instead `.then` and `.catch`.
 
 ```javascript
-client.record.snapshotP(name)
+client.record.p.snapshot(name)
   .then(record => ...)
   .catch(error => ...);
 ```
 
-### `record.hasP`
+### `record.p.has`
+
+Alias: `record.hasP`
 
 Promisification of `record.has`. No callback, instead `.then` and `.catch`.
 
 ```javascript
-client.record.hasP(name)
+client.record.p.has(name)
   .then(hasRecord => ...)
   .catch(error => ...);
 ```
 
-### `rpc.makeP`
+### `rpc.p.make`
 
-Promisification of `rpc.makeP`. No callback, instead `.then` and `.catch`.
+Alias: `rpc.makeP`
+
+Promisification of `rpc.make`. No callback, instead `.then` and `.catch`.
 
 ```javascript
-client.rpc.makeP(name, data)
+client.rpc.p.make(name, data)
   .then(result => ...)
   .catch(error => ...);
 ```
 
 ## Additional API functions
 
-### `record.getExistingRecordP`
+### `record.p.getExistingRecord`
+
+Alias: `record.getExistingRecordP`
 
 Additional method that does a `.has`-check before `.getRecord` to get a record handler without implicit record creation (Compare with `snapshot` that fails if the record does not exist, but returns the actual record instead of a record handler). It rejects the promise if the record does not exist.
 
 ```javascript
-client.record.getExistingRecordP(name)
+client.record.p.getExistingRecord(name)
   .then(dsRecord => ...)
   .catch(error => ...);
 ```
 
-### `record.getExistingListP`
+### `record.p.getExistingList`
 
-Like `getExistingRecordP` above, but for List.
+Alias: `record.getExistingListP`
+
+Like `p.getExistingRecord` above, but for List.
 
 ```javascript
-client.record.getExistingListP(name)
+client.record.p.getExistingList(name)
   .then(dsList => ...)
   .catch(error => ...);
 ```
 
-### `record.listedRecordP`
+### `record.p.setListedRecord`
 
-**DEPRICATED**. Use `record.setListedRecordP`
+Alias: `record.setListedRecordP`
 
-### `record.setListedRecordP`
-
-In case you often end up with the structure of having a list of some type of records as the "parent" of those records. For example a list of all books at `books` and the books at `books/one-child`, `books/way-of-the-peaceful-warrior` and `books/bilbo`.
+In case you often end up with the structure of having a list of some type of records as the "parent" of those records. For example a list of all books at `books` and the books at `books/one-child`, `books/way-of-the-peaceful-warrior` and `books/hobbit`.
 
 Supports different merge strategies. Default is a shallow merge.
 
 ```javascript
-client.record.setListedRecordP('books', 'bilbo', { author: 'J R R Tolkien', title: 'Bilbo' })
+client.record.p.setListedRecord('books', 'hobbit', { author: 'J R R Tolkien', title: 'The Hobbit' })
   .then(([id, created]) => {
-    console.log(id, created); // => bilbo true (if it did not exist, otherwise false)
-    client.record.getListP('books').then(list => {
+    console.log(id, created); // => hobbit true (if it did not exist, otherwise false)
+    client.record.p.getList('books').then(list => {
       list.getEntries().forEach(path => {
-        client.record.snapshotP(path).then(book => {
+        client.record.p.snapshot(path).then(book => {
           console.log(book.author, '-', book.title); // => J R R Tolkien - Bilbo
         });
       });
@@ -184,12 +227,14 @@ client.record.setListedRecordP('books', 'bilbo', { author: 'J R R Tolkien', titl
 | `fullPathList` | `boolean` | `true` | Will store the full record path in the list, otherwise only the record ID. |
 
 
-### `record.setExistingRecordP`
+### `record.p.setExistingRecord`
+
+Alias: `record.setExistingRecordP`
 
 Update an existing record, with possibility of different merge strategies. Default is a shallow merge.
 
 ```javascript
-client.record.setExistingRecordP('books/bilbo', { author: 'John Ronald Reuel Tolkien' })
+client.record.p.setExistingRecord('books/hobbit', { author: 'John Ronald Reuel Tolkien' })
   .then(dsRecord => ...)
   .catch(error => ...);
 ```
@@ -201,12 +246,14 @@ client.record.setExistingRecordP('books/bilbo', { author: 'John Ronald Reuel Tol
 | `deepMerge` | `boolean` | `false` | Will turn on deep merge of `obj` into the record. |
 | `overwrite` | `boolean` | `false` | Will replace the record with `obj`. |
 
-### `record.addToListP`
+### `record.p.addToList`
+
+Alias: `record.addToListP`
 
 Add entry to an existing list, if it is not already there.
 
 ```javascript
-client.record.addToListP('books', 'bilbo')
+client.record.p.addToList('books', 'hobbit')
   .then(dsList => ...)
   .catch(error => ...);
 ```
@@ -216,12 +263,14 @@ client.record.addToListP('books', 'bilbo')
 | `listPath` | `string` | | Is the name/path of the record. |
 | `id` | `string` | | Entry to add. |
 
-### `record.removeFromListP`
+### `record.p.removeFromList`
+
+Alias: `record.removeFromListP`
 
 Remove entry to an existing list, if it is not already there.
 
 ```javascript
-client.record.removeFromListP('books', 'bilbo')
+client.record.p.removeFromList('books', 'hobbit')
   .then(dsList => ...)
   .catch(error => ...);
 ```
@@ -242,8 +291,8 @@ An alternative way to add entries to a deepstream list, that **prevents duplicat
 ```javascript
 import { addEntry } from 'extended-ds-client';
 
-client.record.getExistingListPT('books')
-  .then(dsList => addEntry(dsList, 'bilbo'));
+client.record.p.getExistingList('books')
+  .then(dsList => addEntry(dsList, 'hobbit'));
   .catch(error => ...);
 ```
 
@@ -254,3 +303,5 @@ client.record.getExistingListPT('books')
 
 ## Licence
 MIT
+
+## Change log

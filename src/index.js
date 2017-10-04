@@ -167,17 +167,17 @@ export default function getClient(url, options) {
   };
   polyfill(c, 'p', rootP);
   const rpcP = {
-    make: c.makeP,
+    make: c.rpc.makeP,
   };
   polyfill(c.rpc, 'p', rpcP);
 
   // Depricated methods
-  polyfill(c.record, 'getListedRecordP', () => {
-    throw new Error('use setListedRecordP instead of getListedRecordP');
-  });
-  polyfill(c.record, 'listedRecordP', () => {
-    throw new Error('use setListedRecordP instead of listedRecordP');
-  });
+  // polyfill(c.record, 'getListedRecordP', () => {
+  //   throw new Error('use setListedRecordP instead of getListedRecordP');
+  // });
+  // polyfill(c.record, 'listedRecordP', () => {
+  //   throw new Error('use setListedRecordP instead of listedRecordP');
+  // });
   return c;
 }
 
