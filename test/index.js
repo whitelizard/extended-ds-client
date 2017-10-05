@@ -54,6 +54,7 @@ test('p.getList', () =>
   }));
 test('getListP', () =>
   c.record.getListP('list1').then(l => {
+    addEntry(l, 'record1');
     if (l.getEntries().length !== 1) throw new Error('Bad list');
     return true;
   }));

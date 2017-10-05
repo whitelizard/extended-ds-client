@@ -305,3 +305,16 @@ client.record.p.getExistingList('books')
 MIT
 
 ## Change log
+
+### 4.0
+- New primary naming / method access, using "p" as scope
+  - Keeping old naming as aliases
+- Full test coverage
+- Much smaller footprint in node_modules
+- Dropping unofficial tenant support
+- Improved documentation with more examples/code
+
+### 3.0
+- Methods added as polyfills
+- New method addToList
+- Re-exporting of deepstream client constants
