@@ -312,6 +312,7 @@ MIT
 - Full test coverage
 - Much smaller footprint in node_modules
 - Dropping unofficial tenant support
+- Dropping deprecated methods
 - Improved documentation with more examples/code
 
 ### 3.0
