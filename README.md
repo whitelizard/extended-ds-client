@@ -81,19 +81,30 @@ ds.client = getClient('localhost:6020'); // use singleton feature
 
 client.loginP({}); // using alias pattern
 
-console.log(CONSTANTS); // MERGE_STRATEGIES is also available to import
+console.log(CONSTANTS); // MERGE_STRATEGIES is also available as import
 ```
 
 ### Example 3
 
 ```javascript
+// Given Example 2 file was imported before this one
+
 import { ds } from 'extended-ds-client';
 
-// Given Exmple 2 file was imported before this one
+// And why not use async-await now...
 
-ds.client.record.p.getExistingRecord('records/record1').then(r => {
-  // ...
-});
+async function fetchUsers() {
+  const l = await ds.client.record.p.getExistingList('users');
+  const records = await Promise.all(
+    l.getEntries().map(path => ds.client.record.p.getExistingRecord(path)),
+  );
+  const users = {};
+  records.forEach(r => {
+    const user = r.get();
+    users[user.id] = user;
+  });
+  return users;
+}
 ```
 
 ## Promisification API
@@ -241,8 +252,8 @@ client.record.p.setExistingRecord('books/hobbit', { author: 'John Ronald Reuel T
 
 | Argument | Type | Default | Description |
 | -------- | ---- | ------- | ----------- |
-| `name` | `string` | | Is the name/path of the record. |
-| `obj` | `Object` | | Is an object with either an entire record or updates to merge into it. |
+| `name` | `string` | | The name/path of the record. |
+| `obj` | `Object` | | An object with either an entire record or updates to merge into it. |
 | `deepMerge` | `boolean` | `false` | Will turn on deep merge of `obj` into the record. |
 | `overwrite` | `boolean` | `false` | Will replace the record with `obj`. |
 
@@ -250,7 +261,7 @@ client.record.p.setExistingRecord('books/hobbit', { author: 'John Ronald Reuel T
 
 Alias: `record.addToListP`
 
-Add entry to an existing list, if it is not already there.
+Add entry to an existing list, **if it is not already there**.
 
 ```javascript
 client.record.p.addToList('books', 'hobbit')
@@ -260,14 +271,14 @@ client.record.p.addToList('books', 'hobbit')
 
 | Argument | Type | Default | Description |
 | -------- | ---- | ------- | ----------- |
-| `listPath` | `string` | | Is the name/path of the record. |
+| `listPath` | `string` | | The name/path of the record. |
 | `id` | `string` | | Entry to add. |
 
 ### `record.p.removeFromList`
 
 Alias: `record.removeFromListP`
 
-Remove entry to an existing list, if it is not already there.
+Remove entry from an existing list.
 
 ```javascript
 client.record.p.removeFromList('books', 'hobbit')
@@ -277,7 +288,7 @@ client.record.p.removeFromList('books', 'hobbit')
 
 | Argument | Type | Default | Description |
 | -------- | ---- | ------- | ----------- |
-| `listPath` | `string` | | Is the name/path of the record. |
+| `listPath` | `string` | | The name/path of the record. |
 | `id` | `string` | | Entry to remove. |
 
 ## Utility functions
@@ -287,6 +298,8 @@ These are not extensions of the client object, but freely importable functions.
 ### `addEntry`
 
 An alternative way to add entries to a deepstream list, that **prevents duplicates**.
+
+See also above method `record.p.addToList` that utilizes this one.
 
 ```javascript
 import { addEntry } from 'extended-ds-client';
@@ -307,11 +320,11 @@ MIT
 ## Change log
 
 ### 4.0
-- New primary naming / method access, using "p" as scope
+- New primary naming / method access, using `p` as scope
   - Keeping old naming as aliases
 - Full test coverage
 - Much smaller footprint in node_modules
-- Dropping unofficial tenant support
+- Dropping unofficial tenant extension
 - Dropping deprecated methods
 - Improved documentation with more examples/code
 
