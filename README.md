@@ -79,7 +79,7 @@ import getClient, { CONSTANTS, ds } from 'extended-ds-client';
 
 ds.client = getClient('localhost:6020'); // use singleton feature
 
-client.loginP({}); // using alias pattern
+ds.client.loginP({}); // using alias pattern
 
 console.log(CONSTANTS); // MERGE_STRATEGIES is also available as import
 ```
@@ -87,7 +87,7 @@ console.log(CONSTANTS); // MERGE_STRATEGIES is also available as import
 ### Example 3
 
 ```javascript
-// Given Example 2 file was imported before this one
+// Given Example 2 file is imported together with this one
 
 import { ds } from 'extended-ds-client';
 
