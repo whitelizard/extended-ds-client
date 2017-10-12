@@ -5,6 +5,10 @@ import getClient, { addEntry, polyfill, CONSTANTS, MERGE_STRATEGIES } from '../s
 const server = new Deepstream();
 server.start();
 const c = getClient('localhost:6020');
+const cc = getClient('localhost:6020', {
+  listedRecordFullPaths: false,
+  listedRecordIdKey: 'rid',
+});
 
 test('polyfill', t => {
   const o = new class X {
@@ -27,7 +31,7 @@ test('CONSTANTS', t => {
   t.end();
 });
 
-test('p.login', () => c.p.login({}));
+test('p.login', () => Promise.all([c.p.login({}), cc.loginP({})]));
 
 test('provide', t => {
   c.rpc.provide('rpc1', (err, res) => res.send(5));
@@ -103,6 +107,17 @@ test('removeFromListP', () =>
     return true;
   }));
 
+test('p.addToList multi', () =>
+  c.record.p.addToList('list1', ['record4', 'r5', 'r6']).then(l => {
+    if (l.getEntries()[3] !== 'r6') throw new Error('Bad list');
+    return true;
+  }));
+test('p.removeFromList multi', () =>
+  c.record.p.removeFromList('list1', ['record4', 'r5', 'r6']).then(l => {
+    if (JSON.stringify(l.getEntries()) !== '["record1"]') throw new Error('Bad list');
+    return true;
+  }));
+
 test('p.snapshot', () =>
   c.record.p.snapshot('record1').then(r => {
     if (JSON.stringify(r) !== '{"name":"Record1","data":{"a":1}}') throw new Error('Bad record');
@@ -170,19 +185,19 @@ test('p.setListedRecord', () =>
       });
     });
   }));
-test('setListedRecordP + auto id & not fullPathList', () =>
-  c.record
-    .setListedRecordP('records', undefined, { name: 'Record3' }, undefined, undefined, false)
+test('setListedRecordP + auto id', () =>
+  cc.record
+    .setListedRecordP('records', undefined, { name: 'Record3' }, undefined, undefined)
     .then(([id, created]) => {
       if (!created) throw new Error('Was not created!?');
       if (typeof id !== 'string' && id.length !== c.getUid().length) {
         throw new Error('Was not created!?');
       }
-      return c.record.getExistingListP('records').then(l => {
+      return cc.record.getExistingListP('records').then(l => {
         if (JSON.stringify(l.getEntries()) !== `["records/record2","${id}"]`) {
           throw new Error('Bad list');
         }
-        return c.record.getExistingRecordP(`records/${id}`).then(r => {
+        return cc.record.getExistingRecordP(`records/${id}`).then(r => {
           if (r.get().name !== 'Record3') throw new Error('Bad record content');
           return true;
         });
@@ -191,6 +206,7 @@ test('setListedRecordP + auto id & not fullPathList', () =>
 
 test('shutdown', t => {
   c.close();
+  cc.close();
   server.stop();
   t.end();
 });

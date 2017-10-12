@@ -17,11 +17,11 @@ export function addEntry(list, str) {
 }
 
 function getRecordP(name) {
-  return new Promise(resolve => this.record.getRecord(name).whenReady(r => resolve(r)));
+  return new Promise(resolve => this.record.getRecord(name).whenReady(resolve));
 }
 
 function getListP(name) {
-  return new Promise(resolve => this.record.getList(name).whenReady(r => resolve(r)));
+  return new Promise(resolve => this.record.getList(name).whenReady(resolve));
 }
 
 function getExistingP(type, pathStr) {
@@ -36,14 +36,16 @@ function getExistingP(type, pathStr) {
 
 function removeFromListP(listPath, id) {
   return this.record.getExistingListP(listPath).then(l => {
-    l.removeEntry(id);
+    if (typeof id === 'string') l.removeEntry(id);
+    else id.forEach(v => l.removeEntry(v));
     return l;
   });
 }
 
 function addToListP(listPath, id) {
-  return this.record.getExistingListP(listPath).then(l => {
-    addEntry(l, id);
+  return this.record.getListP(listPath).then(l => {
+    if (typeof id === 'string') addEntry(l, id);
+    else id.forEach(v => addEntry(l, v));
     return l;
   });
 }
@@ -70,12 +72,12 @@ function setListedRecordP(listPath, recordId, obj, deepMerge, overwrite) {
     // Update record:
     let created = false;
     const record = r.get();
-    const newRecord = { ...obj, id: recordId };
+    const newRecord = this.listedRecordIdKey ? { ...obj, [this.listedRecordIdKey]: recordId } : obj;
     if (Object.keys(record).length === 0) {
       r.set(newRecord);
       created = true;
     } else if (deepMerge) {
-      r.set(merge(record, obj));
+      r.set(merge(record, newRecord));
     } else if (overwrite) {
       r.set(newRecord);
     } else {
@@ -99,8 +101,7 @@ function removeListedRecordP(listPath, recordId) {
 function setExistingRecordP(name, obj, deepMerge, overwrite) {
   return this.record.getExistingRecordP(name).then(r => {
     if (deepMerge) {
-      const record = r.get();
-      r.set(merge(record, obj));
+      r.set(merge(r.get(), obj));
     } else if (overwrite) {
       r.set(obj);
     } else {
@@ -149,6 +150,8 @@ export default function getClient(url, options) {
 
   c.listedRecordFullPaths =
     options && options.listedRecordFullPaths !== undefined ? options.listedRecordFullPaths : true;
+  c.listedRecordIdKey =
+    options && options.listedRecordIdKey !== undefined ? options.listedRecordIdKey : 'id';
 
   polyfill(c, 'loginP', loginP.bind(c));
   polyfill(c.rpc, 'makeP', makeP.bind(c));
