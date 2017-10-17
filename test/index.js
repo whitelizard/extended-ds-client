@@ -173,36 +173,28 @@ test('makeP', () =>
     return true;
   }));
 
-test('p.setListedRecord', () =>
-  c.record.p.setListedRecord('records', 'record2', { name: 'Record2' }).then(([id, created]) => {
-    if (!created) throw new Error('Was not created!?');
-    if (id !== 'record2') throw new Error('Bad ID');
-    return c.record.getExistingListP('records').then(l => {
-      if (JSON.stringify(l.getEntries()) !== '["records/record2"]') throw new Error('Bad list');
-      return c.record.getExistingRecordP('records/record2').then(r => {
-        if (r.get().name !== 'Record2') throw new Error('Bad record content');
+test('p.getListedRecord', () =>
+  c.record.p.getListedRecord('records', 'record2', { name: 'Record2' }).then(([l, r]) => {
+    if (r.get().id !== 'record2') throw new Error('Bad ID');
+    if (JSON.stringify(l.getEntries()) !== '["records/record2"]') throw new Error('Bad list');
+    if (r.get().name !== 'Record2') throw new Error('Bad record content');
+    return true;
+  }));
+test('setListedRecordP + auto id', () =>
+  cc.record.setListedRecordP('records', undefined, { name: 'Record3' }).then(id => {
+    if (typeof id !== 'string' && id.length !== c.getUid().length) {
+      throw new Error('Was not created!?');
+    }
+    return cc.record.getExistingListP('records').then(l => {
+      if (JSON.stringify(l.getEntries()) !== `["records/record2","${id}"]`) {
+        throw new Error('Bad list');
+      }
+      return cc.record.getExistingRecordP(`records/${id}`).then(r => {
+        if (r.get().name !== 'Record3') throw new Error('Bad record content');
         return true;
       });
     });
   }));
-test('setListedRecordP + auto id', () =>
-  cc.record
-    .setListedRecordP('records', undefined, { name: 'Record3' }, undefined, undefined)
-    .then(([id, created]) => {
-      if (!created) throw new Error('Was not created!?');
-      if (typeof id !== 'string' && id.length !== c.getUid().length) {
-        throw new Error('Was not created!?');
-      }
-      return cc.record.getExistingListP('records').then(l => {
-        if (JSON.stringify(l.getEntries()) !== `["records/record2","${id}"]`) {
-          throw new Error('Bad list');
-        }
-        return cc.record.getExistingRecordP(`records/${id}`).then(r => {
-          if (r.get().name !== 'Record3') throw new Error('Bad record content');
-          return true;
-        });
-      });
-    }));
 
 test('shutdown', t => {
   c.close();

@@ -59,23 +59,21 @@ function snapshotP(name) {
   );
 }
 
-function setListedRecordP(listPath, recordId, obj, deepMerge, overwrite) {
+function getListedRecordP(listPath, recordId, obj, deepMerge, overwrite) {
   const id = recordId || this.getUid();
   const rPath = `${listPath}/${id}`;
   return Promise.all([
-    this.record.getRecordP(rPath),
     this.record.getListP(listPath),
-  ]).then(([r, l]) => {
+    this.record.getRecordP(rPath),
+  ]).then(([l, r]) => {
     // Update list:
     if (this.listedRecordFullPaths) addEntry(l, rPath);
     else addEntry(l, id);
     // Update record:
-    let created = false;
     const record = r.get();
-    const newRecord = this.listedRecordIdKey ? { ...obj, [this.listedRecordIdKey]: recordId } : obj;
+    const newRecord = { ...obj, [this.listedRecordIdKey]: id };
     if (Object.keys(record).length === 0) {
       r.set(newRecord);
-      created = true;
     } else if (deepMerge) {
       r.set(merge(record, newRecord));
     } else if (overwrite) {
@@ -83,8 +81,14 @@ function setListedRecordP(listPath, recordId, obj, deepMerge, overwrite) {
     } else {
       Object.keys(newRecord).forEach(key => r.set(key, newRecord[key]));
     }
-    return [id, created];
+    return [l, r];
   });
+}
+
+function setListedRecordP(listPath, recordId, obj, deepMerge, overwrite) {
+  return this.record
+    .getListedRecordP(listPath, recordId, obj, deepMerge, overwrite)
+    .then(arr => arr[1].get()[this.listedRecordIdKey]);
 }
 
 function removeListedRecordP(listPath, recordId) {
@@ -95,7 +99,7 @@ function removeListedRecordP(listPath, recordId) {
       .then(r => r.delete())
       .catch(() => undefined),
     this.record.removeFromListP(listPath, this.listedRecordFullPaths ? rPath : recordId),
-  ]);
+  ]).then(() => true);
 }
 
 function setExistingRecordP(name, obj, deepMerge, overwrite) {
@@ -164,6 +168,7 @@ export default function getClient(url, options) {
   polyfill(c.record, 'setExistingRecordP', setExistingRecordP.bind(c));
   polyfill(c.record, 'addToListP', addToListP.bind(c));
   polyfill(c.record, 'removeFromListP', removeFromListP.bind(c));
+  polyfill(c.record, 'getListedRecordP', getListedRecordP.bind(c));
   polyfill(c.record, 'setListedRecordP', setListedRecordP.bind(c));
   polyfill(c.record, 'removeListedRecordP', removeListedRecordP.bind(c));
 
@@ -185,6 +190,7 @@ export default function getClient(url, options) {
     setExistingRecord: c.record.setExistingRecordP,
     addToList: c.record.addToListP,
     removeFromList: c.record.removeFromListP,
+    getListedRecord: c.record.getListedRecordP,
     setListedRecord: c.record.setListedRecordP,
     removeListedRecord: c.record.removeListedRecordP,
   };
