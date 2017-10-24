@@ -13,18 +13,20 @@ npm i -S extended-ds-client
 Creating a client through this package will give you additional methods on the client object, leaving everything from the default client untouched (getRecord, getList etc).
 
 These are the additional functions:
-- [`p.login`](#plogin) (alias `loginP`)
-- [`record.p.getRecord`](#recordpgetrecord) (alias `record.getRecordP`)
-- [`record.p.getList`](#recordpgetlist) (alias `record.getListP`)
-- [`record.p.snapshot`](#recordpsnapshot) (alias `record.snapshotP`)
-- [`record.p.has`](#recordphas) (alias `record.hasP`)
-- [`record.p.getExistingRecord`](#recordpgetexistingrecord) (alias `record.getExistingRecordP`)
-- [`record.p.getExistingList`](#recordpgetexistinglist) (alias `record.getExistingListP`)
-- [`record.p.setListedRecord`](#recordpsetlistedrecord) (alias `record.setListedRecordP`)
-- [`record.p.setExistingRecord`](#recordpsetexistingrecord) (alias `record.setExistingRecordP`)
-- [`record.p.addToList`](#recordpaddtolist) (alias `record.addToListP`)
-- [`record.p.removeFromList`](#recordpremovefromlist) (alias `record.removeFromListP`)
-- [`rpc.p.make`](#rpcpmake) (alias `rpc.makeP`)
+- [`p.login`](#plogin) (alias: `loginP`)
+- [`record.p.getRecord`](#recordpgetrecord) (alias: `record.getRecordP`)
+- [`record.p.getList`](#recordpgetlist) (alias: `record.getListP`)
+- [`record.p.snapshot`](#recordpsnapshot) (alias: `record.snapshotP`)
+- [`record.p.has`](#recordphas) (alias: `record.hasP`)
+- [`record.p.getExistingRecord`](#recordpgetexistingrecord) (alias: `record.getExistingRecordP`)
+- [`record.p.getExistingList`](#recordpgetexistinglist) (alias: `record.getExistingListP`)
+- [`record.p.getListedRecord`](#recordpgetlistedrecord) (alias: `record.getListedRecordP`)
+- [`record.p.setListedRecord`](#recordpsetlistedrecord) (alias: `record.setListedRecordP`)
+- [`record.p.removeListedRecord`](#recordpremovelistedrecord) (alias: `record.removeListedRecordP`)
+- [`record.p.setExistingRecord`](#recordpsetexistingrecord) (alias: `record.setExistingRecordP`)
+- [`record.p.addToList`](#recordpaddtolist) (alias: `record.addToListP`)
+- [`record.p.removeFromList`](#recordpremovefromlist) (alias: `record.removeFromListP`)
+- [`rpc.p.make`](#rpcpmake) (alias: `rpc.makeP`)
 
 In case of *rejection* on any of these functions, the rejected argument is always an instance of **Error**.
 
@@ -140,7 +142,7 @@ Straightforward promisification of login. See **Example 1** above.
 
 Alias: `record.getRecordP`
 
-Promisification of `record.getRecord`. No callback, instead `.then` and `.catch`.
+Promisification of `record.getRecord`.
 
 ```js
 client.record.p.getRecord(name)
@@ -152,7 +154,7 @@ client.record.p.getRecord(name)
 
 Alias: `record.getListP`
 
-Promisification of `record.getList`. No callback, instead `.then` and `.catch`.
+Promisification of `record.getList`.
 
 ```js
 client.record.p.getList(name)
@@ -164,7 +166,7 @@ client.record.p.getList(name)
 
 Alias: `record.snapshotP`
 
-Promisification of `record.snapshot`. No callback, instead `.then` and `.catch`.
+Promisification of `record.snapshot`.
 
 ```js
 client.record.p.snapshot(name)
@@ -176,7 +178,7 @@ client.record.p.snapshot(name)
 
 Alias: `record.hasP`
 
-Promisification of `record.has`. No callback, instead `.then` and `.catch`.
+Promisification of `record.has`.
 
 ```js
 client.record.p.has(name)
@@ -188,7 +190,7 @@ client.record.p.has(name)
 
 Alias: `rpc.makeP`
 
-Promisification of `rpc.make`. No callback, instead `.then` and `.catch`.
+Promisification of `rpc.make`.
 
 ```js
 client.rpc.p.make(name, data)
@@ -202,7 +204,7 @@ client.rpc.p.make(name, data)
 
 Alias: `record.getExistingRecordP`
 
-Additional method that does a `.has`-check before `.getRecord` to get a record handler without implicit record creation (Compare with `snapshot` that fails if the record does not exist, but returns the actual record instead of a record handler). It rejects the promise if the record does not exist.
+Additional method that does a `.has`-check before `.getRecord` to get a record handler without implicit record creation (Compare with `snapshot` that also fails if the record does not exist, but returns the actual record instead of a record handler). It rejects the promise if the record does not exist.
 
 ```js
 client.record.p.getExistingRecord(name)
@@ -222,25 +224,24 @@ client.record.p.getExistingList(name)
   .catch(error => ...);
 ```
 
-### `record.p.setListedRecord`
+### `record.p.getListedRecord`
 
-Alias: `record.setListedRecordP`
+Alias: `record.getListedRecordP`
 
-In case you often end up with the structure of having a list of some type of records as the "parent" of those records. For example a list of all books at `books` and the books at `books/one-child`, `books/way-of-the-peaceful-warrior` and `books/hobbit`.
+In case you often end up with the structure of having a list of some type of records as the "parent" of those records. For example a list of all books at `books` and the books at `books/selfish-gene`, `books/one-child` etc.
 
 Supports different merge strategies. Default is a shallow merge.
 
+On resolve you get back both the deepstream list handle and record handle.
+
+The options described in [`getClient`](#getclient) above will influence how this function operates.
+
 ```js
-client.record.p.setListedRecord('books', 'hobbit', { author: 'J R R Tolkien', title: 'The Hobbit' })
-  .then(([id, created]) => {
-    console.log(id, created); // => hobbit true (if it did not exist, otherwise false)
-    client.record.p.getList('books').then(list => {
-      list.getEntries().forEach(path => {
-        client.record.p.snapshot(path).then(book => {
-          console.log(book.author, '-', book.title); // => J R R Tolkien - The Hobbit
-        });
-      });
-    });
+client.record.p.getListedRecord('books', 'selfish-gene', { author: 'R Dawkins', title: 'The Selfish Gene' })
+  .then(([dsList, dsRecord]) => {
+    const book = dsRecord.get();
+    console.log(dsList.getEntries());
+    console.log(book.author, '-', book.title);
   });
 ```
 
@@ -251,8 +252,36 @@ client.record.p.setListedRecord('books', 'hobbit', { author: 'J R R Tolkien', ti
 | `obj` | `Object` | | An object with either an entire record or updates to merge into it. |
 | `deepMerge` | `boolean` | `false` | Will turn on deep merge of `obj` into the record. |
 | `overwrite` | `boolean` | `false` | Will replace the record with `obj`. |
-| `fullPathList` | `boolean` | `true` | Will store the full record path in the list, otherwise only the record ID. |
 
+### `record.p.setListedRecord`
+
+Alias: `record.setListedRecordP`
+
+The same as `record.p.getListedRecord` but without getting handles back, instead you only get the record id.
+
+```js
+client.record.p.setListedRecord('books', undefined, { author: 'R Dawkins', title: 'The Selfish Gene' })
+  .then(id => {
+    console.log('The record got the automatic id:', id);
+  });
+```
+
+### `record.p.removeListedRecord`
+
+Alias: `record.removeListedRecordP`
+
+Removes both a record and its entry in the list, as created with `getListedRecord`.
+
+```js
+client.record.p.removeListedRecord('books', 'selfish-gene').then(ok => {
+  console.log('Removal was ok:', ok);
+});
+```
+
+| Argument | Type | Default | Description |
+| -------- | ---- | ------- | ----------- |
+| `listPath` | `string` | | The path to the list. |
+| `recordId` | `string` | | The ID of the record. |
 
 ### `record.p.setExistingRecord`
 
@@ -261,7 +290,7 @@ Alias: `record.setExistingRecordP`
 Update an existing record, with possibility of different merge strategies. Default is a shallow merge.
 
 ```js
-client.record.p.setExistingRecord('books/hobbit', { author: 'John Ronald Reuel Tolkien' })
+client.record.p.setExistingRecord('books/selfish-gene', { author: 'Richard Dawkins' })
   .then(dsRecord => ...)
   .catch(error => ...);
 ```
@@ -277,10 +306,10 @@ client.record.p.setExistingRecord('books/hobbit', { author: 'John Ronald Reuel T
 
 Alias: `record.addToListP`
 
-Add entry to an existing list, **if it is not already there**.
+Add an entry or multiple entries to an existing list, **without duplicates**.
 
 ```js
-client.record.p.addToList('books', 'hobbit')
+client.record.p.addToList('books', 'selfish-gene')
   .then(dsList => ...)
   .catch(error => ...);
 ```
@@ -294,10 +323,10 @@ client.record.p.addToList('books', 'hobbit')
 
 Alias: `record.removeFromListP`
 
-Remove entry from an existing list.
+Remove an entry or multiple entries from an existing list.
 
 ```js
-client.record.p.removeFromList('books', 'hobbit')
+client.record.p.removeFromList('books', 'selfish-gene')
   .then(dsList => ...)
   .catch(error => ...);
 ```
@@ -321,7 +350,7 @@ See also above method `record.p.addToList` that utilizes this one.
 import { addEntry } from 'extended-ds-client';
 
 client.record.p.getExistingList('books')
-  .then(dsList => addEntry(dsList, 'hobbit'));
+  .then(dsList => addEntry(dsList, 'selfish-gene'));
   .catch(error => ...);
 ```
 
@@ -334,6 +363,18 @@ client.record.p.getExistingList('books')
 MIT
 
 ## Change log
+
+### 5.0
+- Added `getListedRecord` that returns list & record handles
+  - Will create both list & record if non-existent
+  - Consistent with original `getList`/`getRecord`
+- `setListedRecord` now only returns the record id
+- Added method `removeListedRecord`
+- `addToList` & `removeFromList` now also accepts multiple entries
+- Options added that controls how `*listedRecord` operates
+  - listedRecordFullPaths
+  - listedRecordIdKey
+  - splitChar
 
 ### 4.0
 - New primary naming / method access, using `p` as scope
