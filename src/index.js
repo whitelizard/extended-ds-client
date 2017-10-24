@@ -61,7 +61,7 @@ function snapshotP(name) {
 
 function getListedRecordP(listPath, recordId, obj, deepMerge, overwrite) {
   const id = recordId || this.getUid();
-  const rPath = `${listPath}/${id}`;
+  const rPath = `${listPath}${this.splitChar}${id}`;
   return Promise.all([
     this.record.getListP(listPath),
     this.record.getRecordP(rPath),
@@ -92,7 +92,7 @@ function setListedRecordP(listPath, recordId, obj, deepMerge, overwrite) {
 }
 
 function removeListedRecordP(listPath, recordId) {
-  const rPath = `${listPath}/${recordId}`;
+  const rPath = `${listPath}${this.splitChar}${recordId}`;
   return Promise.all([
     this.record
       .getExistingRecordP(rPath)
@@ -156,6 +156,7 @@ export default function getClient(url, options) {
     options && options.listedRecordFullPaths !== undefined ? options.listedRecordFullPaths : true;
   c.listedRecordIdKey =
     options && options.listedRecordIdKey !== undefined ? options.listedRecordIdKey : 'id';
+  c.splitChar = options && options.splitChar !== undefined ? options.splitChar : '/';
 
   polyfill(c, 'loginP', loginP.bind(c));
   polyfill(c.rpc, 'makeP', makeP.bind(c));
@@ -196,70 +197,8 @@ export default function getClient(url, options) {
   };
   polyfill(c.record, 'p', recordP);
 
-  // Depricated methods
-  // polyfill(c.record, 'getListedRecordP', () => {
-  //   throw new Error('use setListedRecordP instead of getListedRecordP');
-  // });
-  // polyfill(c.record, 'listedRecordP', () => {
-  //   throw new Error('use setListedRecordP instead of listedRecordP');
-  // });
   return c;
 }
-
-// function withTenant(func, name, ...args) {
-//   return this.record[func](`${this.getTenant()}/${name}`, ...args);
-// }
-//
-// export function getClientWithTenant(url, options, tenant = 'demo') {
-//   const c = getClient(url, options);
-//   polyfill(
-//     c,
-//     'getTenant',
-//     function () {
-//       return this;
-//     }.bind(tenant),
-//   ); // non-closure getter
-//   polyfill(c.record, 'getRecordPT', withTenant.bind(c, 'getRecordP'));
-//   // polyfill(c.record, 'getRecordT', withTenant.bind(c, 'getRecord'));
-//   polyfill(c.record, 'getListPT', withTenant.bind(c, 'getListP'));
-//   // polyfill(c.record, 'getListT', withTenant.bind(c, 'getList'));
-//   polyfill(c.record, 'snapshotPT', withTenant.bind(c, 'snapshotP'));
-//   // polyfill(c.record, 'snapshotT', withTenant.bind(c, 'snapshot'));
-//   polyfill(c.record, 'hasPT', withTenant.bind(c, 'hasP'));
-//   // polyfill(c.record, 'hasT', withTenant.bind(c, 'has'));
-//   polyfill(c.record, 'addToListPT', withTenant.bind(c, 'addToListP'));
-//   polyfill(c.record, 'removeFromListPT', withTenant.bind(c, 'removeFromListP'));
-//   polyfill(
-//     c.record,
-//     'removeFromListPTT',
-//     function (name, id) {
-//       return this.record.removeFromListP(
-//         `${this.getTenant()}/${name}`,
-//         `${this.getTenant()}/${id}`,
-//       );
-//     }.bind(c),
-//   );
-//   polyfill(c.record, 'getExistingRecordPT', withTenant.bind(c, 'getExistingRecordP'));
-//   polyfill(c.record, 'getExistingListPT', withTenant.bind(c, 'getExistingListP'));
-//   polyfill(c.record, 'setListedRecordPT', withTenant.bind(c, 'setListedRecordP'));
-//   polyfill(c.record, 'setExistingRecordPT', withTenant.bind(c, 'setExistingRecordP'));
-//   polyfill(
-//     c.rpc,
-//     'makePT',
-//     function (name, data) {
-//       return this.rpc.makeP(`${this.getTenant()}/${name}`, data);
-//     }.bind(c),
-//   );
-//
-//   // Depricated methods
-//   polyfill(c.record, 'getListedRecordPT', () => {
-//     throw new Error('use setListedRecordPT instead of getListedRecordPT');
-//   });
-//   polyfill(c.record, 'listedRecordPT', () => {
-//     throw new Error('use setListedRecordPT instead of listedRecordPT');
-//   });
-//   return c;
-// }
 
 // ------------------------------------------------------------
 //  FOR SINGLETON USE

@@ -8,6 +8,7 @@ const c = getClient('localhost:6020');
 const cc = getClient('localhost:6020', {
   listedRecordFullPaths: false,
   listedRecordIdKey: 'rid',
+  splitChar: '.',
 });
 
 test('polyfill', t => {
@@ -180,19 +181,37 @@ test('p.getListedRecord', () =>
     if (r.get().name !== 'Record2') throw new Error('Bad record content');
     return true;
   }));
+let tId;
 test('setListedRecordP + auto id', () =>
-  cc.record.setListedRecordP('records', undefined, { name: 'Record3' }).then(id => {
+  cc.record.setListedRecordP('cars', undefined, { name: 'Number 3' }).then(id => {
     if (typeof id !== 'string' && id.length !== c.getUid().length) {
       throw new Error('Was not created!?');
     }
-    return cc.record.getExistingListP('records').then(l => {
-      if (JSON.stringify(l.getEntries()) !== `["records/record2","${id}"]`) {
+    tId = id;
+    return cc.record.getExistingListP('cars').then(l => {
+      if (JSON.stringify(l.getEntries()) !== `["${id}"]`) {
         throw new Error('Bad list');
       }
-      return cc.record.getExistingRecordP(`records/${id}`).then(r => {
-        if (r.get().name !== 'Record3') throw new Error('Bad record content');
+      return cc.record.getExistingRecordP(`cars.${id}`).then(r => {
+        if (r.get().name !== 'Number 3') throw new Error('Bad record content');
         return true;
       });
+    });
+  }));
+test('p.removeListedRecord', () =>
+  c.record.p.removeListedRecord('records', 'record2').then(ok => {
+    if (!ok) throw new Error('Not ok');
+    c.record.p.getExistingList('records').then(l => {
+      // console.log(l.getEntries());
+      if (l.getEntries().length !== 0) throw new Error('Bad list');
+    });
+  }));
+test('p.removeListedRecord', () =>
+  cc.record.p.removeListedRecord('cars', tId).then(ok => {
+    if (!ok) throw new Error('Not ok');
+    cc.record.p.getExistingList('cars').then(l => {
+      // console.log(l.getEntries());
+      if (l.getEntries().length !== 0) throw new Error('Bad list');
     });
   }));
 
