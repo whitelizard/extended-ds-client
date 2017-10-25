@@ -296,7 +296,7 @@ client.record.p.getListedRecord('books', 'selfish-gene', { author: 'R Dawkins', 
 
 Alias: `record.setListedRecordP`
 
-The same as `record.p.getListedRecord` but without getting handles back, instead you only get the record id.
+The same as `record.p.getListedRecord` but without getting handles back, instead you only get the record id. It will discard the handles used internally.
 
 ```js
 client.record.p.setListedRecord('books', undefined, { author: 'R Dawkins', title: 'The Selfish Gene' })
