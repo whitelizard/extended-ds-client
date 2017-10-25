@@ -22,9 +22,11 @@ These are the additional functions:
 - [`rpc.p.make`](#rpcpmake) (alias: `rpc.makeP`)
 - [`record.p.getExistingRecord`](#recordpgetexistingrecord) (alias: `record.getExistingRecordP`)
 - [`record.p.getExistingList`](#recordpgetexistinglist) (alias: `record.getExistingListP`)
+- [`record.p.deleteRecord`](#recordpdeleterecord) (alias: `record.deleteRecordP`)
+- [`record.p.deleteList`](#recordpdeletelist) (alias: `record.deleteListP`)
 - [`record.p.getListedRecord`](#recordpgetlistedrecord) (alias: `record.getListedRecordP`)
 - [`record.p.setListedRecord`](#recordpsetlistedrecord) (alias: `record.setListedRecordP`)
-- [`record.p.removeListedRecord`](#recordpremovelistedrecord) (alias: `record.removeListedRecordP`)
+- [`record.p.deleteListedRecord`](#recordpremovelistedrecord) (alias: `record.deleteListedRecordP`)
 - [`record.p.setExistingRecord`](#recordpsetexistingrecord) (alias: `record.setExistingRecordP`)
 - [`record.p.addToList`](#recordpaddtolist) (alias: `record.addToListP`)
 - [`record.p.removeFromList`](#recordpremovefromlist) (alias: `record.removeFromListP`)
@@ -237,6 +239,30 @@ client.record.p.getExistingList(name)
   .catch(error => ...);
 ```
 
+### `record.p.deleteRecord`
+
+Alias: `record.deleteRecordP`
+
+Will resolve when the *delete* event is emitted (avoiding the race condition risk).
+
+```js
+client.record.p.deleteRecord(name)
+  .then(() => ...)
+  .catch(error => ...);
+```
+
+### `record.p.deleteList`
+
+Alias: `record.deleteListP`
+
+Like `p.deleteRecord` above, but for List.
+
+```js
+client.record.p.deleteList(name)
+  .then(() => ...)
+  .catch(error => ...);
+```
+
 ### `record.p.getListedRecord`
 
 Alias: `record.getListedRecordP`
@@ -279,14 +305,14 @@ client.record.p.setListedRecord('books', undefined, { author: 'R Dawkins', title
   });
 ```
 
-### `record.p.removeListedRecord`
+### `record.p.deleteListedRecord`
 
-Alias: `record.removeListedRecordP`
+Alias: `record.deleteListedRecordP`
 
 Removes both a record and its entry in the list, as created with `getListedRecord`.
 
 ```js
-client.record.p.removeListedRecord('books', 'selfish-gene').then(ok => {
+client.record.p.deleteListedRecord('books', 'selfish-gene').then(ok => {
   console.log('Removal was ok:', ok);
 });
 ```
@@ -382,7 +408,7 @@ MIT
   - Will create both list & record if non-existent
   - Consistent with original `getList`/`getRecord`
 - `setListedRecord` now only returns the record id
-- Added method `removeListedRecord`
+- Added method `deleteListedRecord`
 - `addToList` & `removeFromList` now also accepts multiple entries
 - Options added that controls how `*listedRecord` operates
   - listedRecordFullPaths

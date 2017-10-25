@@ -198,22 +198,43 @@ test('setListedRecordP + auto id', () =>
       });
     });
   }));
-test('p.removeListedRecord', () =>
-  c.record.p.removeListedRecord('records', 'record2').then(ok => {
+test('p.deleteListedRecord', () =>
+  c.record.p.deleteListedRecord('records', 'record2').then(ok => {
     if (!ok) throw new Error('Not ok');
     c.record.p.getExistingList('records').then(l => {
       // console.log(l.getEntries());
       if (l.getEntries().length !== 0) throw new Error('Bad list');
     });
   }));
-test('p.removeListedRecord', () =>
-  cc.record.p.removeListedRecord('cars', tId).then(ok => {
+test('p.deleteListedRecord', () =>
+  cc.record.p.deleteListedRecord('cars', tId).then(ok => {
     if (!ok) throw new Error('Not ok');
     cc.record.p.getExistingList('cars').then(l => {
       // console.log(l.getEntries());
       if (l.getEntries().length !== 0) throw new Error('Bad list');
     });
   }));
+
+test('p.setData', () =>
+  c.record.p.setData('record1', 'name', 'Test').then(() =>
+    c.record.p.snapshot('record1').then(r => {
+      if (r.name !== 'Test') throw new Error('Bad record');
+    }),
+  ));
+
+test('p.deleteRecord', () =>
+  c.record.p.deleteRecord('record1').then(() =>
+    c.record.p.has('record1').then(hasR => {
+      if (hasR) throw new Error('Bad record');
+    }),
+  ));
+
+test('p.deleteList', () =>
+  c.record.p.deleteList('list1').then(() =>
+    c.record.p.has('list1').then(hasR => {
+      if (hasR) throw new Error('Bad record');
+    }),
+  ));
 
 test('shutdown', t => {
   c.close();

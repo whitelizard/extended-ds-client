@@ -159,12 +159,12 @@ function deleteP(type, arg) {
   return new Promise(resolve => {
     if (typeof arg === 'string') {
       this.record
-        [`getExisting${type}P`](arg)
+        [`getExisting${type}P`](arg) // eslint-disable-line
         .then(r => {
           r.on('delete', resolve);
           r.delete();
         })
-        .catch(resolve);
+        .catch(() => resolve());
     } else {
       arg.on('delete', resolve);
       arg.delete();
@@ -206,6 +206,8 @@ export default function getClient(url, options) {
   polyfill(c.record, 'setListedRecordP', setListedRecordP.bind(c));
   polyfill(c.record, 'deleteListedRecordP', deleteListedRecordP.bind(c));
 
+  polyfill(c.record, 'removeListedRecordP', c.deleteListedRecordP); // Alias, backward comp.
+
   const rootP = {
     login: c.loginP,
   };
@@ -220,15 +222,17 @@ export default function getClient(url, options) {
     setData: c.record.setDataP,
     snapshot: c.record.snapshotP,
     has: c.record.hasP,
-    delete: c.record.deleteP,
     getExistingRecord: c.record.getExistingRecordP,
     getExistingList: c.record.getExistingListP,
+    deleteRecord: c.record.deleteRecordP,
+    deleteList: c.record.deleteListP,
     setExistingRecord: c.record.setExistingRecordP,
     addToList: c.record.addToListP,
     removeFromList: c.record.removeFromListP,
     getListedRecord: c.record.getListedRecordP,
     setListedRecord: c.record.setListedRecordP,
     deleteListedRecord: c.record.deleteListedRecordP,
+    removeListedRecord: c.record.deleteListedRecordP, // Alias, backward comp.
   };
   polyfill(c.record, 'p', recordP);
 
