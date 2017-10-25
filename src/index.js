@@ -142,6 +142,22 @@ function makeP(name, data) {
   );
 }
 
+function setDataP(name, path, data) {
+  return new Promise(resolve =>
+    this.record.setData(name, path, data, error => {
+      if (error) throw new Error(error);
+      else resolve();
+    }),
+  );
+}
+
+function deleteP(dsObject) {
+  return new Promise(resolve => {
+    dsObject.on('delete', resolve);
+    dsObject.delete();
+  });
+}
+
 export function polyfill(obj, key, value) {
   if (typeof obj[key] === 'undefined') {
     // eslint-disable-next-line
@@ -162,8 +178,10 @@ export default function getClient(url, options) {
   polyfill(c.rpc, 'makeP', makeP.bind(c));
   polyfill(c.record, 'getRecordP', getRecordP.bind(c));
   polyfill(c.record, 'getListP', getListP.bind(c));
+  polyfill(c.record, 'setDataP', setDataP.bind(c));
   polyfill(c.record, 'hasP', hasP.bind(c));
   polyfill(c.record, 'snapshotP', snapshotP.bind(c));
+  polyfill(c.record, 'deleteP', deleteP.bind(c));
   polyfill(c.record, 'getExistingRecordP', getExistingP.bind(c, 'Record'));
   polyfill(c.record, 'getExistingListP', getExistingP.bind(c, 'List'));
   polyfill(c.record, 'setExistingRecordP', setExistingRecordP.bind(c));
@@ -184,8 +202,10 @@ export default function getClient(url, options) {
   const recordP = {
     getRecord: c.record.getRecordP,
     getList: c.record.getListP,
+    setData: c.record.setDataP,
     has: c.record.hasP,
     snapshot: c.record.snapshotP,
+    delete: c.record.deleteP,
     getExistingRecord: c.record.getExistingRecordP,
     getExistingList: c.record.getExistingListP,
     setExistingRecord: c.record.setExistingRecordP,

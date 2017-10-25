@@ -18,6 +18,7 @@ These are the additional functions:
 - [`record.p.getList`](#recordpgetlist) (alias: `record.getListP`)
 - [`record.p.snapshot`](#recordpsnapshot) (alias: `record.snapshotP`)
 - [`record.p.has`](#recordphas) (alias: `record.hasP`)
+- [`rpc.p.make`](#rpcpmake) (alias: `rpc.makeP`)
 - [`record.p.getExistingRecord`](#recordpgetexistingrecord) (alias: `record.getExistingRecordP`)
 - [`record.p.getExistingList`](#recordpgetexistinglist) (alias: `record.getExistingListP`)
 - [`record.p.getListedRecord`](#recordpgetlistedrecord) (alias: `record.getListedRecordP`)
@@ -26,7 +27,6 @@ These are the additional functions:
 - [`record.p.setExistingRecord`](#recordpsetexistingrecord) (alias: `record.setExistingRecordP`)
 - [`record.p.addToList`](#recordpaddtolist) (alias: `record.addToListP`)
 - [`record.p.removeFromList`](#recordpremovefromlist) (alias: `record.removeFromListP`)
-- [`rpc.p.make`](#rpcpmake) (alias: `rpc.makeP`)
 
 In case of *rejection* on any of these functions, the rejected argument is always an instance of **Error**.
 
