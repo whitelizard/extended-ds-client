@@ -43,6 +43,7 @@ function removeFromListP(listPath, id) {
 }
 
 function addToListP(listPath, id) {
+  // TODO: Need to listen to the add event ??
   return this.record.getListP(listPath).then(l => {
     if (typeof id === 'string') addEntry(l, id);
     else id.forEach(v => addEntry(l, v));
@@ -86,12 +87,15 @@ function getListedRecordP(listPath, recordId, obj, deepMerge, overwrite) {
 }
 
 function setListedRecordP(listPath, recordId, obj, deepMerge, overwrite) {
-  return this.record
-    .getListedRecordP(listPath, recordId, obj, deepMerge, overwrite)
-    .then(arr => arr[1].get()[this.listedRecordIdKey]);
+  return this.record.getListedRecordP(listPath, recordId, obj, deepMerge, overwrite).then(arr => {
+    const id = arr[1].get()[this.listedRecordIdKey];
+    arr[0].discard();
+    arr[1].discard();
+    return id;
+  });
 }
 
-function removeListedRecordP(listPath, recordId) {
+function deleteListedRecordP(listPath, recordId) {
   const rPath = `${listPath}${this.splitChar}${recordId}`;
   return Promise.all([
     this.record
@@ -151,10 +155,20 @@ function setDataP(name, path, data) {
   );
 }
 
-function deleteP(dsObject) {
+function deleteP(type, arg) {
   return new Promise(resolve => {
-    dsObject.on('delete', resolve);
-    dsObject.delete();
+    if (typeof arg === 'string') {
+      this.record
+        [`getExisting${type}P`](arg)
+        .then(r => {
+          r.on('delete', resolve);
+          r.delete();
+        })
+        .catch(resolve);
+    } else {
+      arg.on('delete', resolve);
+      arg.delete();
+    }
   });
 }
 
@@ -179,17 +193,18 @@ export default function getClient(url, options) {
   polyfill(c.record, 'getRecordP', getRecordP.bind(c));
   polyfill(c.record, 'getListP', getListP.bind(c));
   polyfill(c.record, 'setDataP', setDataP.bind(c));
-  polyfill(c.record, 'hasP', hasP.bind(c));
   polyfill(c.record, 'snapshotP', snapshotP.bind(c));
-  polyfill(c.record, 'deleteP', deleteP.bind(c));
+  polyfill(c.record, 'hasP', hasP.bind(c));
   polyfill(c.record, 'getExistingRecordP', getExistingP.bind(c, 'Record'));
   polyfill(c.record, 'getExistingListP', getExistingP.bind(c, 'List'));
+  polyfill(c.record, 'deleteRecordP', deleteP.bind(c, 'Record'));
+  polyfill(c.record, 'deleteListP', deleteP.bind(c, 'List'));
   polyfill(c.record, 'setExistingRecordP', setExistingRecordP.bind(c));
   polyfill(c.record, 'addToListP', addToListP.bind(c));
   polyfill(c.record, 'removeFromListP', removeFromListP.bind(c));
   polyfill(c.record, 'getListedRecordP', getListedRecordP.bind(c));
   polyfill(c.record, 'setListedRecordP', setListedRecordP.bind(c));
-  polyfill(c.record, 'removeListedRecordP', removeListedRecordP.bind(c));
+  polyfill(c.record, 'deleteListedRecordP', deleteListedRecordP.bind(c));
 
   const rootP = {
     login: c.loginP,
@@ -203,8 +218,8 @@ export default function getClient(url, options) {
     getRecord: c.record.getRecordP,
     getList: c.record.getListP,
     setData: c.record.setDataP,
-    has: c.record.hasP,
     snapshot: c.record.snapshotP,
+    has: c.record.hasP,
     delete: c.record.deleteP,
     getExistingRecord: c.record.getExistingRecordP,
     getExistingList: c.record.getExistingListP,
@@ -213,7 +228,7 @@ export default function getClient(url, options) {
     removeFromList: c.record.removeFromListP,
     getListedRecord: c.record.getListedRecordP,
     setListedRecord: c.record.setListedRecordP,
-    removeListedRecord: c.record.removeListedRecordP,
+    deleteListedRecord: c.record.deleteListedRecordP,
   };
   polyfill(c.record, 'p', recordP);
 

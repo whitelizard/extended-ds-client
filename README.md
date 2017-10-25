@@ -16,6 +16,7 @@ These are the additional functions:
 - [`p.login`](#plogin) (alias: `loginP`)
 - [`record.p.getRecord`](#recordpgetrecord) (alias: `record.getRecordP`)
 - [`record.p.getList`](#recordpgetlist) (alias: `record.getListP`)
+- [`record.p.setData`](#recordpsetdata) (alias: `record.setDataP`)
 - [`record.p.snapshot`](#recordpsnapshot) (alias: `record.snapshotP`)
 - [`record.p.has`](#recordphas) (alias: `record.hasP`)
 - [`rpc.p.make`](#rpcpmake) (alias: `rpc.makeP`)
@@ -159,6 +160,18 @@ Promisification of `record.getList`.
 ```js
 client.record.p.getList(name)
   .then(dsList => ...)
+  .catch(error => ...);
+```
+
+### `record.p.setData`
+
+Alias: `record.setDataP`
+
+Promisification of `record.setData`.
+
+```js
+client.record.p.setData(name, path, data)
+  .then(() => ...)
   .catch(error => ...);
 ```
 
