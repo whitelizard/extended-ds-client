@@ -246,10 +246,14 @@ Alias: `record.deleteRecordP`
 Will resolve when the *delete* event is emitted (avoiding the race condition risk).
 
 ```js
-client.record.p.deleteRecord(name)
+client.record.p.deleteRecord(arg)
   .then(() => ...)
   .catch(error => ...);
 ```
+
+| Argument | Type | Default | Description |
+| -------- | ---- | ------- | ----------- |
+| `arg` | `string`/`Object` | | The path to the record *OR* a DS Record object. |
 
 ### `record.p.deleteList`
 
@@ -258,10 +262,14 @@ Alias: `record.deleteListP`
 Like `p.deleteRecord` above, but for List.
 
 ```js
-client.record.p.deleteList(name)
+client.record.p.deleteList(arg)
   .then(() => ...)
   .catch(error => ...);
 ```
+
+| Argument | Type | Default | Description |
+| -------- | ---- | ------- | ----------- |
+| `arg` | `string`/`Object` | | The path to the list *OR* a DS List object. |
 
 ### `record.p.getListedRecord`
 

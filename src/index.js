@@ -103,7 +103,9 @@ function deleteListedRecordP(listPath, recordId) {
       .then(r => r.delete())
       .catch(() => undefined),
     this.record.removeFromListP(listPath, this.listedRecordFullPaths ? rPath : recordId),
-  ]).then(() => true);
+  ]).then(arr => {
+    arr[1].discard();
+  });
 }
 
 function setExistingRecordP(name, obj, deepMerge, overwrite) {
