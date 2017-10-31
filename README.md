@@ -320,8 +320,8 @@ Alias: `record.deleteListedRecordP`
 Removes both a record and its entry in the list, as created with `getListedRecord`.
 
 ```js
-client.record.p.deleteListedRecord('books', 'selfish-gene').then(ok => {
-  console.log('Removal was ok:', ok);
+client.record.p.deleteListedRecord('books', 'selfish-gene').then(dsList => {
+  console.log('List of records after delete:', dsList.getEntries());
 });
 ```
 

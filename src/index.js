@@ -1,5 +1,6 @@
 import deepstream from 'deepstream.io-client-js';
 import merge from 'lodash.merge';
+import mergeWith from 'lodash.mergewith';
 
 export const CONSTANTS = deepstream.CONSTANTS;
 export const MERGE_STRATEGIES = deepstream.MERGE_STRATEGIES;
@@ -60,7 +61,7 @@ function snapshotP(name) {
   );
 }
 
-function getListedRecordP(listPath, recordId, obj, deepMerge, overwrite) {
+function getListedRecordP(listPath, recordId, obj, deepMerge, overwrite, deepMergeCustomizer) {
   const id = recordId || this.getUid();
   const rPath = `${listPath}${this.splitChar}${id}`;
   return Promise.all([
@@ -76,7 +77,8 @@ function getListedRecordP(listPath, recordId, obj, deepMerge, overwrite) {
     if (Object.keys(record).length === 0) {
       r.set(newRecord);
     } else if (deepMerge) {
-      r.set(merge(record, newRecord));
+      if (deepMergeCustomizer) r.set(mergeWith(record, newRecord, deepMergeCustomizer));
+      else r.set(merge(record, newRecord));
     } else if (overwrite) {
       r.set(newRecord);
     } else {
@@ -86,13 +88,15 @@ function getListedRecordP(listPath, recordId, obj, deepMerge, overwrite) {
   });
 }
 
-function setListedRecordP(listPath, recordId, obj, deepMerge, overwrite) {
-  return this.record.getListedRecordP(listPath, recordId, obj, deepMerge, overwrite).then(arr => {
-    const id = arr[1].get()[this.listedRecordIdKey];
-    arr[0].discard();
-    arr[1].discard();
-    return id;
-  });
+function setListedRecordP(listPath, recordId, obj, deepMerge, overwrite, deepMergeCustomizer) {
+  return this.record
+    .getListedRecordP(listPath, recordId, obj, deepMerge, overwrite, deepMergeCustomizer)
+    .then(arr => {
+      const id = arr[1].get()[this.listedRecordIdKey];
+      arr[0].discard();
+      arr[1].discard();
+      return id;
+    });
 }
 
 function deleteListedRecordP(listPath, recordId) {
@@ -103,15 +107,14 @@ function deleteListedRecordP(listPath, recordId) {
       .then(r => r.delete())
       .catch(() => undefined),
     this.record.removeFromListP(listPath, this.listedRecordFullPaths ? rPath : recordId),
-  ]).then(arr => {
-    arr[1].discard();
-  });
+  ]).then(arr => arr[1]);
 }
 
-function setExistingRecordP(name, obj, deepMerge, overwrite) {
+function setExistingRecordP(name, obj, deepMerge, overwrite, deepMergeCustomizer) {
   return this.record.getExistingRecordP(name).then(r => {
     if (deepMerge) {
-      r.set(merge(r.get(), obj));
+      if (deepMergeCustomizer) r.set(mergeWith(r.get(), obj, deepMergeCustomizer));
+      else r.set(merge(r.get(), obj));
     } else if (overwrite) {
       r.set(obj);
     } else {

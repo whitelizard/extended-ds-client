@@ -20,7 +20,8 @@
   "homepage": "https://github.com/whitelizard/extended-ds-client#readme",
   "dependencies": {
     "deepstream.io-client-js": "^2.2.1",
-    "lodash.merge": "^4.6.0"
+    "lodash.merge": "^4.6.0",
+    "lodash.mergewith": "^4.6.0"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
