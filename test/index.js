@@ -175,12 +175,14 @@ test('makeP', () =>
   }));
 
 test('p.getListedRecord', () =>
-  c.record.p.getListedRecord('records', 'record2', { name: 'Record2' }).then(([l, r]) => {
-    if (r.get().id !== 'record2') throw new Error('Bad ID');
-    if (JSON.stringify(l.getEntries()) !== '["records/record2"]') throw new Error('Bad list');
-    if (r.get().name !== 'Record2') throw new Error('Bad record content');
-    return true;
-  }));
+  c.record.p
+    .getListedRecord('records', 'record2', { name: 'Record2', data: [1] })
+    .then(([l, r]) => {
+      if (r.get().id !== 'record2') throw new Error('Bad ID');
+      if (JSON.stringify(l.getEntries()) !== '["records/record2"]') throw new Error('Bad list');
+      if (r.get().name !== 'Record2') throw new Error('Bad record content');
+      return true;
+    }));
 let tId;
 test('setListedRecordP + auto id', () =>
   cc.record.setListedRecordP('cars', undefined, { name: 'Number 3' }).then(id => {
@@ -198,6 +200,24 @@ test('setListedRecordP + auto id', () =>
       });
     });
   }));
+test('p.getListedRecord deepMergeCustomizer', () =>
+  c.record.p
+    .getListedRecord(
+      'records',
+      'record2',
+      { data: [2] },
+      true,
+      undefined,
+      (d, s) => Array.isArray(d) && d.concat(s),
+    )
+    .then(([l, r]) => {
+      const rec = r.get();
+      console.log('record:', rec);
+      if (rec.data.length !== 2) throw new Error('Bad deep merge with concat');
+      l.discard();
+      return true;
+    }));
+
 test('p.deleteListedRecord', () =>
   c.record.p.deleteListedRecord('records', 'record2').then(ok => {
     if (!ok) throw new Error('Not ok');
@@ -206,8 +226,8 @@ test('p.deleteListedRecord', () =>
       if (l.getEntries().length !== 0) throw new Error('Bad list');
     });
   }));
-test('p.deleteListedRecord', () =>
-  cc.record.p.deleteListedRecord('cars', tId).then(ok => {
+test('deleteListedRecordP', () =>
+  cc.record.deleteListedRecordP('cars', tId).then(ok => {
     if (!ok) throw new Error('Not ok');
     cc.record.p.getExistingList('cars').then(l => {
       // console.log(l.getEntries());

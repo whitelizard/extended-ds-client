@@ -111,10 +111,12 @@ function deleteListedRecordP(listPath, recordId) {
 }
 
 function setExistingRecordP(name, obj, deepMerge, overwrite, deepMergeCustomizer) {
+  // TODO: use setData for overwrite and shallow
   return this.record.getExistingRecordP(name).then(r => {
     if (deepMerge) {
-      if (deepMergeCustomizer) r.set(mergeWith(r.get(), obj, deepMergeCustomizer));
-      else r.set(merge(r.get(), obj));
+      const record = r.get();
+      if (deepMergeCustomizer) r.set(mergeWith(record, obj, deepMergeCustomizer));
+      else r.set(merge(record, obj));
     } else if (overwrite) {
       r.set(obj);
     } else {
