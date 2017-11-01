@@ -17,6 +17,13 @@ export function addEntry(list, str) {
   return list.addEntry(str);
 }
 
+function loginP(authParams) {
+  return new Promise(resolve => this.login(authParams, resolve)).then((success, data) => {
+    if (success) return data;
+    throw new Error(data);
+  });
+}
+
 function getRecordP(name) {
   return new Promise(resolve => this.record.getRecord(name).whenReady(resolve));
 }
@@ -25,21 +32,65 @@ function getListP(name) {
   return new Promise(resolve => this.record.getList(name).whenReady(resolve));
 }
 
-function getExistingP(type, pathStr) {
-  return new Promise(resolve =>
-    this.record.has(pathStr, (error, hasRecord) => {
-      if (error) throw new Error(error);
-      if (hasRecord) this.record[`get${type}`](pathStr).whenReady(r => resolve(r));
-      else throw new Error(`${type} does not exist: ${pathStr}`);
-    }),
-  );
+function hasP(name) {
+  return new Promise(resolve => this.record.has(name, resolve)).then((error, hasRecord) => {
+    console.log(name, error, hasRecord);
+    if (error) throw new Error(error);
+    else return hasRecord;
+  });
 }
 
-function removeFromListP(listPath, id) {
-  return this.record.getExistingListP(listPath).then(l => {
-    if (typeof id === 'string') l.removeEntry(id);
-    else id.forEach(v => l.removeEntry(v));
-    return l;
+// function hasP(name) {
+//   return new Promise(resolve => this.record.has(name, resolve)).then((error, hasRecord) => {
+//     console.log(name, error, hasRecord);
+//     if (error) throw new Error(error);
+//     else return hasRecord;
+//   });
+// }
+
+function snapshotP(name) {
+  return new Promise(resolve =>
+    this.record.snapshot(name, (e, d) => resolve(e, d)),
+  ).then((error, data) => {
+    console.log(name, error, data);
+    if (error) throw new Error(error);
+    else return data;
+  });
+}
+
+function setDataP(name, path, data) {
+  return new Promise(resolve => this.record.setData(name, path, data, resolve)).then(error => {
+    if (error) throw new Error(error);
+  });
+}
+
+function makeP(name, data) {
+  return new Promise(resolve => this.rpc.make(name, data, resolve)).then((error, result) => {
+    if (error) throw new Error(error);
+    else return result;
+  });
+}
+
+function getExistingP(type, pathStr) {
+  return this.record.hasP(pathStr).then(hasIt => {
+    if (hasIt === false) throw new Error(`${type} does not exist: ${pathStr}`);
+    return this.record[`get${type}P`](pathStr);
+  });
+}
+
+function setExistingRecordP(name, obj, deepMerge, overwrite, deepMergeCustomizer) {
+  // TODO: use setData for overwrite and shallow
+  return this.record.getExistingRecordP(name).then(r => {
+    if (deepMerge) {
+      const record = r.get();
+      if (deepMergeCustomizer) r.set(mergeWith(record, obj, deepMergeCustomizer));
+      else r.set(merge(record, obj));
+    } else if (overwrite) {
+      r.set(obj);
+    } else {
+      Object.keys(obj).forEach(key => r.set(key, obj[key]));
+    }
+    return r;
   });
 }
 
@@ -52,13 +103,29 @@ function addToListP(listPath, id) {
   });
 }
 
-function snapshotP(name) {
-  return new Promise(resolve =>
-    this.record.snapshot(name, (error, data) => {
-      if (error) throw new Error(error);
-      else resolve(data);
-    }),
-  );
+function removeFromListP(listPath, id) {
+  return this.record.getExistingListP(listPath).then(l => {
+    if (typeof id === 'string') l.removeEntry(id);
+    else id.forEach(v => l.removeEntry(v));
+    return l;
+  });
+}
+
+function deleteP(type, arg) {
+  return new Promise(resolve => {
+    if (typeof arg === 'string') {
+      this.record
+        [`getExisting${type}P`](arg) // eslint-disable-line
+        .then(r => {
+          r.on('delete', resolve);
+          r.delete();
+        })
+        .catch(() => resolve());
+    } else {
+      arg.on('delete', resolve);
+      arg.delete();
+    }
+  });
 }
 
 function getListedRecordP(listPath, recordId, obj, deepMerge, overwrite, deepMergeCustomizer) {
@@ -108,75 +175,6 @@ function deleteListedRecordP(listPath, recordId) {
       .catch(() => undefined),
     this.record.removeFromListP(listPath, this.listedRecordFullPaths ? rPath : recordId),
   ]).then(arr => arr[1]);
-}
-
-function setExistingRecordP(name, obj, deepMerge, overwrite, deepMergeCustomizer) {
-  // TODO: use setData for overwrite and shallow
-  return this.record.getExistingRecordP(name).then(r => {
-    if (deepMerge) {
-      const record = r.get();
-      if (deepMergeCustomizer) r.set(mergeWith(record, obj, deepMergeCustomizer));
-      else r.set(merge(record, obj));
-    } else if (overwrite) {
-      r.set(obj);
-    } else {
-      Object.keys(obj).forEach(key => r.set(key, obj[key]));
-    }
-    return r;
-  });
-}
-
-function loginP(authParams) {
-  return new Promise(resolve =>
-    this.login(authParams, (success, data) => {
-      if (success) resolve(data);
-      else throw new Error(data);
-    }),
-  );
-}
-
-function hasP(name) {
-  return new Promise(resolve =>
-    this.record.has(name, (error, hasRecord) => {
-      if (error) throw new Error(error);
-      else resolve(hasRecord);
-    }),
-  );
-}
-
-function makeP(name, data) {
-  return new Promise(resolve =>
-    this.rpc.make(name, data, (error, result) => {
-      if (error) throw new Error(error);
-      else resolve(result);
-    }),
-  );
-}
-
-function setDataP(name, path, data) {
-  return new Promise(resolve =>
-    this.record.setData(name, path, data, error => {
-      if (error) throw new Error(error);
-      else resolve();
-    }),
-  );
-}
-
-function deleteP(type, arg) {
-  return new Promise(resolve => {
-    if (typeof arg === 'string') {
-      this.record
-        [`getExisting${type}P`](arg) // eslint-disable-line
-        .then(r => {
-          r.on('delete', resolve);
-          r.delete();
-        })
-        .catch(() => resolve());
-    } else {
-      arg.on('delete', resolve);
-      arg.delete();
-    }
-  });
 }
 
 export function polyfill(obj, key, value) {

@@ -64,6 +64,29 @@ test('getListP', () =>
     return true;
   }));
 
+test('p.has', () =>
+  c.record.p.has('record1').then(ok => {
+    if (!ok) throw new Error('Bad record');
+    return true;
+  }));
+test('hasP', () =>
+  c.record.hasP('record1').then(ok => {
+    if (!ok) throw new Error('Bad record');
+    return true;
+  }));
+
+test('p.snapshot', () =>
+  c.record.p.snapshot('record1').then(r => {
+    console.log(r);
+    if (JSON.stringify(r) !== '{"name":"Record1","data":{"a":1}}') throw new Error('Bad record');
+    return true;
+  }));
+test('snapshotP', () =>
+  c.record.snapshotP('record1').then(r => {
+    if (JSON.stringify(r) !== '{"name":"Record1","data":{"a":1}}') throw new Error('Bad record');
+    return true;
+  }));
+
 test('p.getExistingRecord', () =>
   c.record.p.getExistingRecord('record1').then(r => {
     if (r.get().name !== 'Record1') throw new Error('Bad record');
@@ -119,17 +142,6 @@ test('p.removeFromList multi', () =>
     return true;
   }));
 
-test('p.snapshot', () =>
-  c.record.p.snapshot('record1').then(r => {
-    if (JSON.stringify(r) !== '{"name":"Record1","data":{"a":1}}') throw new Error('Bad record');
-    return true;
-  }));
-test('snapshotP', () =>
-  c.record.snapshotP('record1').then(r => {
-    if (JSON.stringify(r) !== '{"name":"Record1","data":{"a":1}}') throw new Error('Bad record');
-    return true;
-  }));
-
 test('p.setExistingRecord + deepMerge', () =>
   c.record.p.setExistingRecord('record1', { data: { b: 2 } }, true).then(r => {
     if (JSON.stringify(r.get()) !== '{"name":"Record1","data":{"a":1,"b":2}}') {
@@ -149,17 +161,6 @@ test('p.setExistingRecord + overwrite', () =>
     if (JSON.stringify(r.get()) !== '{"title":"The Record"}') {
       throw new Error('Bad record');
     }
-    return true;
-  }));
-
-test('p.has', () =>
-  c.record.p.has('record1').then(ok => {
-    if (!ok) throw new Error('Bad record');
-    return true;
-  }));
-test('hasP', () =>
-  c.record.hasP('record1').then(ok => {
-    if (!ok) throw new Error('Bad record');
     return true;
   }));
 
