@@ -18,10 +18,12 @@ export function addEntry(list, str) {
 }
 
 function loginP(authParams) {
-  return new Promise(resolve => this.login(authParams, resolve)).then((success, data) => {
-    if (success) return data;
-    throw new Error(data);
-  });
+  return new Promise((resolve, reject) =>
+    this.login(authParams, (success, data) => {
+      if (success) resolve(data);
+      else reject(new Error(data));
+    }),
+  );
 }
 
 function getRecordP(name) {
@@ -33,11 +35,39 @@ function getListP(name) {
 }
 
 function hasP(name) {
-  return new Promise(resolve => this.record.has(name, resolve)).then((error, hasRecord) => {
-    console.log(name, error, hasRecord);
-    if (error) throw new Error(error);
-    else return hasRecord;
-  });
+  return new Promise((resolve, reject) =>
+    this.record.has(name, (error, hasRecord) => {
+      if (!error) resolve(hasRecord);
+      else reject(new Error(error));
+    }),
+  );
+}
+
+function snapshotP(name) {
+  return new Promise((resolve, reject) =>
+    this.record.snapshot(name, (error, data) => {
+      if (!error) resolve(data);
+      else reject(new Error(error));
+    }),
+  );
+}
+
+function setDataP(name, path, data) {
+  return new Promise((resolve, reject) =>
+    this.record.setData(name, path, data, error => {
+      if (!error) resolve();
+      else reject(new Error(error));
+    }),
+  );
+}
+
+function makeP(name, data) {
+  return new Promise((resolve, reject) =>
+    this.rpc.make(name, data, (error, result) => {
+      if (!error) resolve(result);
+      else reject(new Error(error));
+    }),
+  );
 }
 
 // function hasP(name) {
@@ -48,28 +78,34 @@ function hasP(name) {
 //   });
 // }
 
-function snapshotP(name) {
-  return new Promise(resolve =>
-    this.record.snapshot(name, (e, d) => resolve(e, d)),
-  ).then((error, data) => {
-    console.log(name, error, data);
-    if (error) throw new Error(error);
-    else return data;
-  });
-}
-
-function setDataP(name, path, data) {
-  return new Promise(resolve => this.record.setData(name, path, data, resolve)).then(error => {
-    if (error) throw new Error(error);
-  });
-}
-
-function makeP(name, data) {
-  return new Promise(resolve => this.rpc.make(name, data, resolve)).then((error, result) => {
-    if (error) throw new Error(error);
-    else return result;
-  });
-}
+// function doSnapshot(name, resolve) {
+//   this.record.snapshot(name, resolve.bind(this));
+// }
+//
+// function snapshotHandler(e, d) {
+//   console.log(e, d);
+//   if (e) throw new Error(e);
+//   else return d;
+// }
+//
+// function snapshotP(name) {
+//   return new Promise(doSnapshot.bind(this, name)).then(snapshotHandler.bind(this));
+// }
+// function snapshotP(name) {
+//   return new Promise(resolve => {
+//     const n = name;
+//     console.log('name', name);
+//     this.record.snapshot(n, (e, d) => {
+//       console.log('snap cb:', name, e, d);
+//       if (e) Promise.reject(new Error(e));
+//       resolve(Object.assign({}, d));
+//     });
+//   }).then((error, data) => {
+//     console.log(name, error, data);
+//     if (error) throw new Error(error);
+//     else return data;
+//   });
+// }
 
 function getExistingP(type, pathStr) {
   return this.record.hasP(pathStr).then(hasIt => {
