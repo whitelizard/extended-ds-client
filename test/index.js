@@ -36,6 +36,7 @@ test('p.login', async t => {
   await Promise.all([c.p.login({}), cc.loginP({})]);
   t.ok(true);
 });
+test('p.login fail', t => t.shouldFail(c.p.login('record2')));
 
 test('provide', t => {
   c.rpc.provide('rpc1', (err, res) => res.send(5));
@@ -50,6 +51,7 @@ test('makeP', async t => {
   const res = await c.rpc.makeP('rpc1');
   t.ok(res === 5);
 });
+test('p.make fail', t => t.shouldFail(c.rpc.p.make(44)));
 
 test('p.getRecord', async t => {
   const r = await c.record.p.getRecord('record1');
@@ -95,6 +97,7 @@ test('hasP', async t => {
   const ok = await c.record.hasP('record1');
   t.ok(ok);
 });
+test('p.has fail', t => t.shouldFail(c.record.p.has(44)));
 
 test('p.getExistingRecord', async t => {
   const r = await c.record.p.getExistingRecord('record1');
@@ -114,6 +117,7 @@ test('getExistingListP', async t => {
   const l = await c.record.getExistingListP('list1');
   t.ok(l.getEntries()[0] === 'record1');
 });
+test('p.getExistingList fail', t => t.shouldFail(c.record.p.getExistingList('list2')));
 
 test('p.addToList', async t => {
   const l = await c.record.p.addToList('list1', 'record2');
@@ -123,6 +127,7 @@ test('addToListP', async t => {
   const l = await c.record.addToListP('list1', 'record3');
   t.ok(l.getEntries()[2] === 'record3');
 });
+test('p.addToList fail', t => t.shouldFail(c.record.p.addToList('list1', 44)));
 
 test('p.removeFromList', async t => {
   const l = await c.record.p.removeFromList('list1', 'record2');
@@ -132,6 +137,7 @@ test('removeFromListP', async t => {
   const l = await c.record.removeFromListP('list1', 'record3');
   t.ok(JSON.stringify(l.getEntries()) === '["record1"]');
 });
+test('p.removeFromList fail', t => t.shouldFail(c.record.p.removeFromList('list1', 44)));
 
 test('p.addToList multi', async t => {
   const l = await c.record.p.addToList('list1', ['record4', 'r5', 'r6']);
@@ -141,6 +147,7 @@ test('p.removeFromList multi', async t => {
   const l = await c.record.p.removeFromList('list1', ['record4', 'r5', 'r6']);
   t.ok(JSON.stringify(l.getEntries()) === '["record1"]');
 });
+test('p.addToList fail', t => t.shouldFail(c.record.p.addToList('list1', [44])));
 
 test('p.setExistingRecord + deepMerge', async t => {
   const r = await c.record.p.setExistingRecord('record1', { data: { b: 2 } }, true);
@@ -150,6 +157,7 @@ test('setExistingRecordP + default update mode', async t => {
   const r = await c.record.setExistingRecordP('record1', { data: 5 });
   t.ok(JSON.stringify(r.get()) === '{"name":"Record1","data":5}');
 });
+test('p.setExistingRecord fail', t => t.shouldFail(c.record.p.setExistingRecord('record1')));
 test('p.setExistingRecord + overwrite', async t => {
   const r = await c.record.p.setExistingRecord('record1', { title: 'The Record' }, false, true);
   t.ok(JSON.stringify(r.get()) === '{"title":"The Record"}');
@@ -169,7 +177,7 @@ test('p.getListedRecord', async t => {
 let tId;
 test('setListedRecordP + auto id', async t => {
   tId = await cc.record.setListedRecordP('cars', undefined, { name: 'Number 3' });
-  t.ok(typeof tId === 'string' && tId.length === c.getUid().length);
+  t.ok(typeof tId === 'string' && tId.length > c.getUid().length - 4);
   const l = await cc.record.getExistingListP('cars');
   t.ok(JSON.stringify(l.getEntries()) === `["${tId}"]`);
   const r = await cc.record.getExistingRecordP(`cars.${tId}`);
