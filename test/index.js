@@ -64,45 +64,6 @@ test('getListP', () =>
     return true;
   }));
 
-let error;
-let data;
-function snapshotP(name) {
-  return new Promise(resolve =>
-    c.record.snapshot(name, (e, d) => {
-      error = e;
-      data = d;
-      console.log(name, e, d);
-      resolve(e, d);
-    }),
-  ).then((err, dat) => {
-    console.log(name, err, dat, error, data);
-    if (error) throw new Error(error);
-    else return data;
-  });
-}
-test('temp test', async () => {
-  c.record.has('record1', (a, b) => console.log(a, b));
-  c.record.snapshot('record1', (a, b) => console.log(a, b));
-  // const a = await new Promise(resolve => {
-  //   const f = arr => {
-  //     console.log(arr);
-  //     resolve(arr);
-  //   };
-  //   c.record.has('record1', f);
-  // });
-  // const e = await new Promise(resolve => c.record.snapshot('record1', resolve));
-  // console.log('record1', a, e);
-  // const p = new Promise(resolve => c.record.snapshot('record1', resolve));
-  // p
-  //   .then((error, data) => {
-  //     console.log('p.then', error, data);
-  //     if (error) throw new Error(error);
-  //     else return data;
-  //   })
-  //   .then(d => console.log('d', d));
-  console.log(await snapshotP('record1'));
-});
-
 test('p.snapshot', () =>
   c.record.p.snapshot('record1').then(r => {
     console.log(r);
@@ -114,6 +75,7 @@ test('snapshotP', () =>
     if (JSON.stringify(r) !== '{"name":"Record1","data":{"a":1}}') throw new Error('Bad record');
     return true;
   }));
+test('p.snapshot fail', t => t.shouldFail(c.record.p.snapshot('record2')));
 
 test('p.has', () =>
   c.record.p.has('record1').then(ok => {

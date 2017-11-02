@@ -70,43 +70,6 @@ function makeP(name, data) {
   );
 }
 
-// function hasP(name) {
-//   return new Promise(resolve => this.record.has(name, resolve)).then((error, hasRecord) => {
-//     console.log(name, error, hasRecord);
-//     if (error) throw new Error(error);
-//     else return hasRecord;
-//   });
-// }
-
-// function doSnapshot(name, resolve) {
-//   this.record.snapshot(name, resolve.bind(this));
-// }
-//
-// function snapshotHandler(e, d) {
-//   console.log(e, d);
-//   if (e) throw new Error(e);
-//   else return d;
-// }
-//
-// function snapshotP(name) {
-//   return new Promise(doSnapshot.bind(this, name)).then(snapshotHandler.bind(this));
-// }
-// function snapshotP(name) {
-//   return new Promise(resolve => {
-//     const n = name;
-//     console.log('name', name);
-//     this.record.snapshot(n, (e, d) => {
-//       console.log('snap cb:', name, e, d);
-//       if (e) Promise.reject(new Error(e));
-//       resolve(Object.assign({}, d));
-//     });
-//   }).then((error, data) => {
-//     console.log(name, error, data);
-//     if (error) throw new Error(error);
-//     else return data;
-//   });
-// }
-
 function getExistingP(type, pathStr) {
   return this.record.hasP(pathStr).then(hasIt => {
     if (hasIt === false) throw new Error(`${type} does not exist: ${pathStr}`);
