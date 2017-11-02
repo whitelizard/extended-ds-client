@@ -98,6 +98,7 @@ test('getExistingRecordP', () =>
     if (r.get().name !== 'Record1') throw new Error('Bad record');
     return true;
   }));
+test('p.getExistingRecord fail', t => t.shouldFail(c.record.p.getExistingRecord('record2')));
 
 test('p.getExistingList', () =>
   c.record.p.getExistingList('list1').then(l => {
