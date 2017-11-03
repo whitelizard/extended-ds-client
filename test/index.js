@@ -196,26 +196,24 @@ test('p.getListedRecord deepMergeCustomizer', async t => {
   t.ok(rec.data.length === 2);
   l.discard();
 });
+// test('p.getListedRecord fail', t => t.shouldFail(c.record.p.getListedRecord('l', 'r', false)));
 
 test('p.deleteListedRecord', async t => {
-  const ok = await c.record.p.deleteListedRecord('records', 'record2');
-  t.ok(ok);
-  const l = await c.record.p.getExistingList('records');
-  // console.log(l.getEntries());
+  const l = await c.record.p.deleteListedRecord('records', 'record2');
   t.ok(l.getEntries().length === 0);
 });
 test('deleteListedRecordP', async t => {
-  const ok = await cc.record.deleteListedRecordP('cars', tId);
-  t.ok(ok);
-  const l = await cc.record.p.getExistingList('cars');
+  const l = await cc.record.deleteListedRecordP('cars', tId);
   t.ok(l.getEntries().length === 0);
 });
+test('p.deleteListedRecord fail', t => t.shouldFail(c.record.p.deleteListedRecord('a', 'b')));
 
 test('p.setData', async t => {
   await c.record.p.setData('record1', 'name', 'Test');
   const r = await c.record.p.snapshot('record1');
   t.ok(r.name === 'Test');
 });
+test('p.setData fail', t => t.shouldFail(c.record.p.setData(44)));
 
 test('p.deleteRecord', async t => {
   await c.record.p.deleteRecord('record1');

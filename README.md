@@ -299,6 +299,7 @@ client.record.p.getListedRecord('books', 'selfish-gene', { author: 'R Dawkins', 
 | `obj` | `Object` | | An object with either an entire record or updates to merge into it. |
 | `deepMerge` | `boolean` | `false` | Will turn on deep merge of `obj` into the record. |
 | `overwrite` | `boolean` | `false` | Will replace the record with `obj`. |
+| `deepMergeCustomizer` | `Function` | | Custom merge handler (when `deepMerge` = `true`). |
 
 ### `record.p.setListedRecord`
 
@@ -348,6 +349,7 @@ client.record.p.setExistingRecord('books/selfish-gene', { author: 'Richard Dawki
 | `obj` | `Object` | | An object with either an entire record or updates to merge into it. |
 | `deepMerge` | `boolean` | `false` | Will turn on deep merge of `obj` into the record. |
 | `overwrite` | `boolean` | `false` | Will replace the record with `obj`. |
+| `deepMergeCustomizer` | `Function` | | Custom merge handler (when `deepMerge` = `true`). |
 
 ### `record.p.addToList`
 
