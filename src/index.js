@@ -103,7 +103,7 @@ function addToListP(listPath, id) {
 }
 
 function removeFromListP(listPath, id) {
-  return this.record.getExistingListP(listPath).then(l => {
+  return this.record.getListP(listPath).then(l => {
     if (typeof id === 'string') l.removeEntry(id);
     else id.forEach(v => l.removeEntry(v));
     return l;
@@ -113,8 +113,7 @@ function removeFromListP(listPath, id) {
 function deleteP(type, arg) {
   return new Promise(resolve => {
     if (typeof arg === 'string') {
-      this.record
-        [`getExisting${type}P`](arg) // eslint-disable-line
+      this.record[`getExisting${type}P`](arg) // eslint-disable-line
         .then(r => {
           r.on('delete', resolve);
           r.delete();
@@ -130,28 +129,27 @@ function deleteP(type, arg) {
 function getListedRecordP(listPath, recordId, obj, deepMerge, overwrite, deepMergeCustomizer) {
   const id = recordId || this.getUid();
   const rPath = `${listPath}${this.splitChar}${id}`;
-  return Promise.all([
-    this.record.getListP(listPath),
-    this.record.getRecordP(rPath),
-  ]).then(([l, r]) => {
-    // Update list:
-    if (this.listedRecordFullPaths) addEntry(l, rPath);
-    else addEntry(l, id);
-    // Update record:
-    const record = r.get();
-    const newRecord = { ...obj, [this.listedRecordIdKey]: id };
-    if (Object.keys(record).length === 0) {
-      r.set(newRecord);
-    } else if (deepMerge) {
-      if (deepMergeCustomizer) r.set(mergeWith(record, newRecord, deepMergeCustomizer));
-      else r.set(merge(record, newRecord));
-    } else if (overwrite) {
-      r.set(newRecord);
-    } else {
-      Object.keys(newRecord).forEach(key => r.set(key, newRecord[key]));
-    }
-    return [l, r];
-  });
+  return Promise.all([this.record.getListP(listPath), this.record.getRecordP(rPath)]).then(
+    ([l, r]) => {
+      // Update list:
+      if (this.listedRecordFullPaths) addEntry(l, rPath);
+      else addEntry(l, id);
+      // Update record:
+      const record = r.get();
+      const newRecord = { ...obj, [this.listedRecordIdKey]: id };
+      if (Object.keys(record).length === 0) {
+        r.set(newRecord);
+      } else if (deepMerge) {
+        if (deepMergeCustomizer) r.set(mergeWith(record, newRecord, deepMergeCustomizer));
+        else r.set(merge(record, newRecord));
+      } else if (overwrite) {
+        r.set(newRecord);
+      } else {
+        Object.keys(newRecord).forEach(key => r.set(key, newRecord[key]));
+      }
+      return [l, r];
+    },
+  );
 }
 
 function setListedRecordP(listPath, recordId, obj, deepMerge, overwrite, deepMergeCustomizer) {
