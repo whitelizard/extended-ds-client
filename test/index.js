@@ -206,7 +206,10 @@ test('deleteListedRecordP', async t => {
   const l = await cc.record.deleteListedRecordP('cars', tId);
   t.ok(l.getEntries().length === 0);
 });
-test('p.deleteListedRecord fail', t => t.shouldFail(c.record.p.deleteListedRecord('a', 'b')));
+test('p.deleteListedRecord non-existant list', async t => {
+  const l = await c.record.p.deleteListedRecord('a', 'b');
+  t.ok(l.getEntries().length === 0);
+});
 
 test('p.setData', async t => {
   await c.record.p.setData('record1', 'name', 'Test');
