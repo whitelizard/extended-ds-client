@@ -13,28 +13,32 @@ npm i -S extended-ds-client
 Creating a client through this package will give you additional methods on the client object, leaving everything from the default client untouched (getRecord, getList etc).
 
 These are the additional functions:
-- [`p.login`](#plogin) (alias: `loginP`)
-- [`record.p.getRecord`](#recordpgetrecord) (alias: `record.getRecordP`)
-- [`record.p.getList`](#recordpgetlist) (alias: `record.getListP`)
-- [`record.p.setData`](#recordpsetdata) (alias: `record.setDataP`)
-- [`record.p.snapshot`](#recordpsnapshot) (alias: `record.snapshotP`)
-- [`record.p.has`](#recordphas) (alias: `record.hasP`)
-- [`rpc.p.make`](#rpcpmake) (alias: `rpc.makeP`)
-- [`record.p.getExistingRecord`](#recordpgetexistingrecord) (alias: `record.getExistingRecordP`)
-- [`record.p.getExistingList`](#recordpgetexistinglist) (alias: `record.getExistingListP`)
-- [`record.p.deleteRecord`](#recordpdeleterecord) (alias: `record.deleteRecordP`)
-- [`record.p.deleteList`](#recordpdeletelist) (alias: `record.deleteListP`)
-- [`record.p.getListedRecord`](#recordpgetlistedrecord) (alias: `record.getListedRecordP`)
-- [`record.p.setListedRecord`](#recordpsetlistedrecord) (alias: `record.setListedRecordP`)
-- [`record.p.deleteListedRecord`](#recordpremovelistedrecord) (alias: `record.deleteListedRecordP`)
-- [`record.p.setExistingRecord`](#recordpsetexistingrecord) (alias: `record.setExistingRecordP`)
-- [`record.p.addToList`](#recordpaddtolist) (alias: `record.addToListP`)
-- [`record.p.removeFromList`](#recordpremovefromlist) (alias: `record.removeFromListP`)
 
-In case of *rejection* on any of these functions, the rejected argument is always an instance of **Error**.
+* [`p.login`](#plogin) (alias: `loginP`)
+* [`record.p.getRecord`](#recordpgetrecord) (alias: `record.getRecordP`)
+* [`record.p.getList`](#recordpgetlist) (alias: `record.getListP`)
+* [`record.p.setData`](#recordpsetdata) (alias: `record.setDataP`)
+* [`record.p.snapshot`](#recordpsnapshot) (alias: `record.snapshotP`)
+* [`record.p.has`](#recordphas) (alias: `record.hasP`)
+* [`rpc.p.make`](#rpcpmake) (alias: `rpc.makeP`)
+* [`record.p.getExistingRecord`](#recordpgetexistingrecord) (alias: `record.getExistingRecordP`)
+* [`record.p.getExistingList`](#recordpgetexistinglist) (alias: `record.getExistingListP`)
+* [`record.p.deleteRecord`](#recordpdeleterecord) (alias: `record.deleteRecordP`)
+* [`record.p.deleteList`](#recordpdeletelist) (alias: `record.deleteListP`)
+  <!-- - [`record.p.getListedRecord`](#recordpgetlistedrecord) (alias: `record.getListedRecordP`)
+* [`record.p.setListedRecord`](#recordpsetlistedrecord) (alias: `record.setListedRecordP`)
+* [`record.p.deleteListedRecord`](#recordpremovelistedrecord) (alias: `record.deleteListedRecordP`)
+* [`record.p.setExistingRecord`](#recordpsetexistingrecord) (alias: `record.setExistingRecordP`) -->
+* [`record.p.addToList`](#recordpaddtolist) (alias: `record.addToListP`)
+* [`record.p.removeFromList`](#recordpremovefromlist) (alias: `record.removeFromListP`)
+* [`record.p.updateExistingRecord`](#recordpupdateexistingrecord) (alias: `record.updateExistingRecordP`)
+* [`record.p.getDatasetRecord`](#recordpgetdatasetrecord) (alias: `record.getDatasetRecordP`)
+
+In case of _rejection_ on any of these functions, the rejected argument is always an instance of **Error**.
 
 There is also a utility function to import from this module:
-- [`addEntry`](#addentry) (prevents duplicates)
+
+* [`addEntry`](#addentry) (prevents duplicates)
 
 Tunneling export of `CONSTANTS` & `MERGE_STRATEGIES` (so that you don't also have to import deepstream.io-client-js for these).
 
@@ -45,28 +49,26 @@ import getClient from 'extended-ds-client';
 
 const client = getClient('localhost:6020');
 
-client.p.login({})
+client.p
+  .login({})
   .then(data => {
     console.log('Successful login.', data);
   })
   .catch(data => {
     console.log('Login failed.', data);
-  })
+  });
 
 const users = {};
 client.record.p.getList('users').then(list => {
   // With the list of entries, map each entry to a record promise and
   // wait for all to get finished:
-  Promise.all(
-    list.getEntries().map(
-      path => client.record.p.getRecord(path)
-    )
-  )
-    .then(records => records.forEach(record => {
+  Promise.all(list.getEntries().map(path => client.record.p.getRecord(path))).then(records =>
+    records.forEach(record => {
       // Now save all data etc
       const user = record.get();
       users[user.id] = user;
-    }));
+    }),
+  );
 });
 
 // Default functions still work
@@ -112,21 +114,21 @@ async function fetchUsers() {
 
 ## getClient
 
-Default export from this module is the function `getClient` to create a client (just like *deepstream()* in original client). In the same way it also accepts an options object.
+Default export from this module is the function `getClient` to create a client (just like _deepstream()_ in original client). In the same way it also accepts an options object.
 
 ```js
 const client = getClient('localhost:6020', {
   listedRecordFullPaths: false,
   listedRecordIdKey: 'rid',
-  splitChar: '.'
+  splitChar: '.',
 });
 ```
 
-| Option | Type | Default | Description |
-| -------- | ---- | ------- | ----------- |
-| `listedRecordFullPaths` | `boolean` | true | Full paths in lists (or only id) for listedRecord methods. |
-| `listedRecordIdKey` | `string` | `'id'` | ID key for listed records. |
-| `splitChar` | `string` | `'/'` | Splitting character in paths (for listed records). |
+| Option                  | Type      | Default | Description                                                |
+| ----------------------- | --------- | ------- | ---------------------------------------------------------- |
+| `listedRecordFullPaths` | `boolean` | true    | Full paths in lists (or only id) for listedRecord methods. |
+| `listedRecordIdKey`     | `string`  | `'id'`  | ID key for listed records.                                 |
+| `splitChar`             | `string`  | `'/'`   | Splitting character in paths (for listed records).         |
 
 ## Promisification API
 
@@ -193,11 +195,11 @@ client.record.p.snapshot(name)
 
 Alias: `record.hasP`
 
-Promisification of `record.has`.
+Promisification of `record.has`, but will reject if it does not exist (and on error of course).
 
 ```js
 client.record.p.has(name)
-  .then(hasRecord => ...)
+  .then(() => ...)
   .catch(error => ...);
 ```
 
@@ -243,7 +245,7 @@ client.record.p.getExistingList(name)
 
 Alias: `record.deleteRecordP`
 
-Will resolve when the *delete* event is emitted (avoiding the race condition risk).
+Will resolve when the _delete_ event is emitted (avoiding the race condition risk).
 
 ```js
 client.record.p.deleteRecord(arg)
@@ -251,9 +253,9 @@ client.record.p.deleteRecord(arg)
   .catch(error => ...);
 ```
 
-| Argument | Type | Default | Description |
-| -------- | ---- | ------- | ----------- |
-| `arg` | `string`/`Object` | | The path to the record *OR* a DS Record object. |
+| Argument | Type              | Default | Description                                     |
+| -------- | ----------------- | ------- | ----------------------------------------------- |
+| `arg`    | `string`/`Object` |         | The path to the record _OR_ a DS Record object. |
 
 ### `record.p.deleteList`
 
@@ -267,11 +269,11 @@ client.record.p.deleteList(arg)
   .catch(error => ...);
 ```
 
-| Argument | Type | Default | Description |
-| -------- | ---- | ------- | ----------- |
-| `arg` | `string`/`Object` | | The path to the list *OR* a DS List object. |
+| Argument | Type              | Default | Description                                 |
+| -------- | ----------------- | ------- | ------------------------------------------- |
+| `arg`    | `string`/`Object` |         | The path to the list _OR_ a DS List object. |
 
-### `record.p.getListedRecord`
+<!-- ### `record.p.getListedRecord`
 
 Alias: `record.getListedRecordP`
 
@@ -349,7 +351,7 @@ client.record.p.setExistingRecord('books/selfish-gene', { author: 'Richard Dawki
 | `obj` | `Object` | | An object with either an entire record or updates to merge into it. |
 | `deepMerge` | `boolean` | `false` | Will turn on deep merge of `obj` into the record. |
 | `overwrite` | `boolean` | `false` | Will replace the record with `obj`. |
-| `deepMergeCustomizer` | `Function` | | Custom merge handler (when `deepMerge` = `true`). |
+| `deepMergeCustomizer` | `Function` | | Custom merge handler (when `deepMerge` = `true`). | -->
 
 ### `record.p.addToList`
 
@@ -363,10 +365,10 @@ client.record.p.addToList('books', 'selfish-gene')
   .catch(error => ...);
 ```
 
-| Argument | Type | Default | Description |
-| -------- | ---- | ------- | ----------- |
-| `listPath` | `string` | | The name/path of the record. |
-| `id` | `string`/`Array` | | Entry(ies) to add. |
+| Argument   | Type             | Default | Description                  |
+| ---------- | ---------------- | ------- | ---------------------------- |
+| `listPath` | `string`         |         | The name/path of the record. |
+| `id`       | `string`/`Array` |         | Entry(ies) to add.           |
 
 ### `record.p.removeFromList`
 
@@ -380,10 +382,10 @@ client.record.p.removeFromList('books', 'selfish-gene')
   .catch(error => ...);
 ```
 
-| Argument | Type | Default | Description |
-| -------- | ---- | ------- | ----------- |
-| `listPath` | `string` | | The name/path of the record. |
-| `id` | `string`/`Array` | | Entry(ies) to add. |
+| Argument   | Type             | Default | Description                  |
+| ---------- | ---------------- | ------- | ---------------------------- |
+| `listPath` | `string`         |         | The name/path of the record. |
+| `id`       | `string`/`Array` |         | Entry(ies) to add.           |
 
 ## Utility functions
 
@@ -403,41 +405,44 @@ client.record.p.getExistingList('books')
   .catch(error => ...);
 ```
 
-| Argument | Type | Default | Description |
-| -------- | ---- | ------- | ----------- |
-| `list`| `Object` | | A DS List object. |
-| `str`| `string` | | The entry to add. |
+| Argument | Type     | Default | Description       |
+| -------- | -------- | ------- | ----------------- |
+| `list`   | `Object` |         | A DS List object. |
+| `str`    | `string` |         | The entry to add. |
 
 ## Licence
+
 MIT
 
 ## Change log
 
 ### 5.0
-- Added `getListedRecord` that returns list & record handles
-  - Will create both list & record if non-existent
-  - Consistent with original `getList`/`getRecord`
-- `setListedRecord` now only returns the record id
-- Added method `deleteListedRecord`
-- `addToList` & `removeFromList` now also accepts multiple entries
-- Options added that controls how `*listedRecord` operates
-  - listedRecordFullPaths
-  - listedRecordIdKey
-  - splitChar
+
+* Added `getListedRecord` that returns list & record handles
+  * Will create both list & record if non-existent
+  * Consistent with original `getList`/`getRecord`
+* `setListedRecord` now only returns the record id
+* Added method `deleteListedRecord`
+* `addToList` & `removeFromList` now also accepts multiple entries
+* Options added that controls how `*listedRecord` operates
+  * listedRecordFullPaths
+  * listedRecordIdKey
+  * splitChar
 
 ### 4.0
-- New primary naming / method access, using `p` as scope
-  - Keeping old naming as aliases
-- Full test coverage
-- Much smaller footprint in node_modules
-- Dropping unofficial tenant extension
-- Dropping deprecated methods
-- Improved documentation with more examples/code
+
+* New primary naming / method access, using `p` as scope
+  * Keeping old naming as aliases
+* Full test coverage
+* Much smaller footprint in node_modules
+* Dropping unofficial tenant extension
+* Dropping deprecated methods
+* Improved documentation with more examples/code
 
 ### 3.0
-- Methods added as polyfills
-- New method addToList
-- Re-exporting of deepstream client constants
 
+* Methods added as polyfills
+* New method addToList
+* Re-exporting of deepstream client constants
 
 #### Please create an Issue in github if you feel something is missing!

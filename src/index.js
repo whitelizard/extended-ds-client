@@ -76,7 +76,7 @@ function getExistingP(type, pathStr) {
 }
 
 function setExistingRecordP(name, obj, deepMerge, overwrite, deepMergeCustomizer) {
-  // TODO: use setData for overwrite and shallow
+  // TODO: Remove in future release
   return this.record.getExistingRecordP(name).then(r => {
     if (deepMerge) {
       const record = r.get();
@@ -360,7 +360,6 @@ export default function getClient(url, options) {
   polyfill(c.record, 'getExistingListP', getExistingP.bind(c, 'List'));
   polyfill(c.record, 'deleteRecordP', deleteP.bind(c, 'Record'));
   polyfill(c.record, 'deleteListP', deleteP.bind(c, 'List'));
-  polyfill(c.record, 'setExistingRecordP', setExistingRecordP.bind(c));
   polyfill(c.record, 'addToListP', addToListP.bind(c));
   polyfill(c.record, 'removeFromListP', removeFromListP.bind(c));
 
@@ -375,6 +374,7 @@ export default function getClient(url, options) {
   polyfill(c.record, 'getListedRecordP', getListedRecordP.bind(c));
   polyfill(c.record, 'setListedRecordP', setListedRecordP.bind(c));
   polyfill(c.record, 'deleteListedRecordP', deleteListedRecordP.bind(c));
+  polyfill(c.record, 'setExistingRecordP', setExistingRecordP.bind(c));
 
   // polyfill(c.event, 'subIfNot', subIfNot.bind(c));
 
