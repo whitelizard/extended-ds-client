@@ -1,6 +1,7 @@
 import deepstream from 'deepstream.io-client-js';
 import merge from 'lodash.merge';
 import mergeWith from 'lodash.mergewith';
+import isObject from 'lodash.isobject';
 
 export const CONSTANTS = deepstream.CONSTANTS;
 export const MERGE_STRATEGIES = deepstream.MERGE_STRATEGIES;
@@ -37,8 +38,8 @@ function getListP(name) {
 function hasP(name) {
   return new Promise((resolve, reject) =>
     this.record.has(name, (error, hasRecord) => {
-      if (!error) resolve(hasRecord);
-      else reject(new Error(error));
+      if (!error && hasRecord) resolve();
+      else reject(new Error(error ? error : 'Record does not exist'));
     }),
   );
 }
@@ -71,10 +72,7 @@ function makeP(name, data) {
 }
 
 function getExistingP(type, pathStr) {
-  return this.record.hasP(pathStr).then(hasIt => {
-    if (hasIt === false) throw new Error(`${type} does not exist: ${pathStr}`);
-    return this.record[`get${type}P`](pathStr);
-  });
+  return this.record.hasP(pathStr).then(() => this.record[`get${type}P`](pathStr));
 }
 
 function setExistingRecordP(name, obj, deepMerge, overwrite, deepMergeCustomizer) {
@@ -125,8 +123,109 @@ function deleteP(type, arg) {
     }
   });
 }
+// deepConcat: [{a:1}], [{a:2}] -> [{a:2}] | [1,2], [3] -> [1,2,3]
+const concatFunc = (d, s) => {
+  if (Array.isArray(d) && d.every(v => !isObject(v) && !Array.isArray(v))) return d.concat(s);
+  return undefined;
+};
 
-function getListedRecordP(listPath, recordId, obj, deepMerge, overwrite, deepMergeCustomizer) {
+// deepConcatAll: [{a:1}], [{a:2}] -> [{a:1},{a:2}] | [1,2], [3] -> [1,2,3]
+const concatAllFunc = (d, s) => (Array.isArray(d) ? d.concat(s) : undefined);
+
+// deepIgnore: [{a:0},{a:1}], ['%IGNORE%', {a:2}] -> [{a:0},{a:2}] | [1,2], ['%IGNORE%',3] -> [1,3]
+const ignoreFunc = (d, s) => (s === '%IGNORE%' ? d : undefined);
+
+// deepConcatIgnore:
+// [{a:0},{a:1}], ['%IGNORE%', {a:2}] -> [{a:0},{a:2}] | [1,2], [4,3] -> [1,2,4,3]
+const concatIgnoreFunc = (d, s) => {
+  if (Array.isArray(d) && d.every(v => !isObject(v) && !Array.isArray(v))) {
+    return d.concat(s);
+  }
+  return s === '%IGNORE%' ? d : undefined;
+};
+
+const updateModes = {
+  overwrite: undefined,
+  shallow: undefined,
+  deep: undefined,
+  deepConcat: concatFunc,
+  deepConcatAll: concatAllFunc,
+  deepIgnore: ignoreFunc,
+  deepConcatIgnore: concatIgnoreFunc,
+  removeKeys: undefined,
+}; // removeKeys ?
+
+function updateRecord(name, obj, mode = 'shallow', lockedKeys = [], protectedKeys = []) {
+  if (!Object.keys(updateModes).includes(mode)) throw new TypeError('Unsupported mode');
+  return this.record.hasP(name).then(() => {
+    lockedKeys.push(this.listedRecordIdKey);
+    if (mode === 'shallow') {
+      return Promise.all(
+        Object.entries(obj).reduce((promises, [key, value]) => {
+          if (!lockedKeys.includes(key)) {
+            promises.push(this.record.setDataP(name, key, value));
+          }
+          console.log(promises);
+          return promises;
+        }, []),
+      ).then(() => undefined);
+    } else if (mode === 'overwrite') {
+      if (lockedKeys.length + protectedKeys.length === 0) {
+        return this.record.setDataP(name, obj);
+      }
+      return this.record.getRecordP(name).then(r => {
+        const record = r.get();
+        lockedKeys.forEach(k => {
+          if (record[k] !== undefined) obj[k] = record[k];
+        });
+        protectedKeys.forEach(k => {
+          if (obj[k] === undefined && record[k] !== undefined) obj[k] = record[k];
+        });
+        r.set(obj);
+        r.discard();
+        return undefined;
+      });
+    } else if (mode === 'removeKeys') {
+      return this.record.getRecordP(name).then(r => {
+        const record = r.get();
+        obj.forEach(k => {
+          if (!lockedKeys.includes(k) && !protectedKeys.includes(k)) {
+            delete record[k];
+          }
+        });
+        r.set(record);
+        r.discard();
+        return undefined;
+      });
+    }
+    return this.record.getRecordP(name).then(r => {
+      const record = r.get();
+      const mergeFunc = updateModes[mode];
+      let newR;
+      if (mergeFunc) newR = mergeWith(record, obj, mergeFunc);
+      else newR = merge(record, obj);
+      lockedKeys.forEach(k => {
+        if (record[k] !== undefined) newR[k] = record[k];
+      });
+      protectedKeys.forEach(k => {
+        if (newR[k] === undefined && record[k] !== undefined) newR[k] = record[k];
+      });
+      r.set(newR);
+      r.discard();
+      return undefined;
+    });
+  });
+}
+
+function getListedRecordP(
+  listPath,
+  recordId,
+  obj,
+  deepMerge,
+  overwrite,
+  deepMergeCustomizer,
+  lockedKeys,
+) {
   const id = recordId || this.getUid();
   const rPath = `${listPath}${this.splitChar}${id}`;
   return Promise.all([this.record.getListP(listPath), this.record.getRecordP(rPath)]).then(
@@ -152,9 +251,25 @@ function getListedRecordP(listPath, recordId, obj, deepMerge, overwrite, deepMer
   );
 }
 
-function setListedRecordP(listPath, recordId, obj, deepMerge, overwrite, deepMergeCustomizer) {
+function setListedRecordP(
+  listPath,
+  recordId,
+  obj,
+  deepMerge,
+  overwrite,
+  deepMergeCustomizer,
+  lockedKeys,
+) {
   return this.record
-    .getListedRecordP(listPath, recordId, obj, deepMerge, overwrite, deepMergeCustomizer)
+    .getListedRecordP(
+      listPath,
+      recordId,
+      obj,
+      deepMerge,
+      overwrite,
+      deepMergeCustomizer,
+      lockedKeys,
+    )
     .then(arr => {
       const id = arr[1].get()[this.listedRecordIdKey];
       arr[0].discard();
@@ -173,6 +288,11 @@ function deleteListedRecordP(listPath, recordId) {
     this.record.removeFromListP(listPath, this.listedRecordFullPaths ? rPath : recordId),
   ]).then(arr => arr[1]);
 }
+
+// function subIfNot(name, callback) {
+//   if (this.event.emitter.eventNames().includes(name)) return undefined;
+//   return this.event.subscribe(name, callback);
+// }
 
 export function polyfill(obj, key, value) {
   if (typeof obj[key] === 'undefined') {
@@ -207,6 +327,8 @@ export default function getClient(url, options) {
   polyfill(c.record, 'getListedRecordP', getListedRecordP.bind(c));
   polyfill(c.record, 'setListedRecordP', setListedRecordP.bind(c));
   polyfill(c.record, 'deleteListedRecordP', deleteListedRecordP.bind(c));
+  polyfill(c.record, 'updateRecordP', updateRecord.bind(c));
+  // polyfill(c.event, 'subIfNot', subIfNot.bind(c));
 
   polyfill(c.record, 'removeListedRecordP', c.deleteListedRecordP); // Alias, backward comp.
 
@@ -234,6 +356,7 @@ export default function getClient(url, options) {
     getListedRecord: c.record.getListedRecordP,
     setListedRecord: c.record.setListedRecordP,
     deleteListedRecord: c.record.deleteListedRecordP,
+    updateRecord: c.record.updateRecordP,
     removeListedRecord: c.record.deleteListedRecordP, // Alias, backward comp.
   };
   polyfill(c.record, 'p', recordP);

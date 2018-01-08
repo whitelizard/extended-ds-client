@@ -90,14 +90,19 @@ test('snapshotP', async t => {
 test('p.snapshot fail', t => t.shouldFail(c.record.p.snapshot('record2')));
 
 test('p.has', async t => {
-  const ok = await c.record.p.has('record1');
-  t.ok(ok);
+  const res = await c.record.p.has('record1');
+  t.ok(res === undefined);
 });
 test('hasP', async t => {
-  const ok = await c.record.hasP('record1');
-  t.ok(ok);
+  const res = await c.record.hasP('record1');
+  t.ok(res === undefined);
 });
 test('p.has fail', t => t.shouldFail(c.record.p.has(44)));
+test('p.has fail', t => t.shouldFail(c.record.p.has('record99')));
+// test('p.has fail 2', async t => {
+//   const res = await c.record.p.has('record99');
+//   t.ok(res === false);
+// });
 
 test('p.getExistingRecord', async t => {
   const r = await c.record.p.getExistingRecord('record1');
@@ -217,17 +222,266 @@ test('p.setData', async t => {
   t.ok(r.name === 'Test');
 });
 test('p.setData fail', t => t.shouldFail(c.record.p.setData(44)));
+test('p.setData non-existant', async t => {
+  const res = await c.record.p.setData('record99', 'test', 'test');
+  t.ok(res === undefined);
+  const rec = await c.record.p.snapshot('record99');
+  t.ok(rec.test === 'test');
+});
+
+// test('subIfNot', async t => {
+//   c.event.subIfNot('channel', () => {});
+//   t.ok(c.event.emitter.eventNames().includes('channel'));
+//   c.event.subIfNot('channel', () => {});
+//   c.event.unsubscribe('channel');
+//   t.false(c.event.emitter.eventNames().includes('channel'));
+// });
 
 test('p.deleteRecord', async t => {
   await c.record.p.deleteRecord('record1');
-  const hasR = await c.record.p.has('record1');
-  t.ok(!hasR);
+  t.shouldFail(c.record.p.has('record1'));
 });
 
 test('p.deleteList', async t => {
   await c.record.p.deleteList('list1');
-  const hasR = await c.record.p.has('list1');
-  t.ok(!hasR);
+  t.shouldFail(c.record.p.has('list1'));
+});
+
+test('updateRecord shallow', async t => {
+  const r = await c.record.p.getRecord('record1');
+  r.set({ name: 'Record1', data: { a: 1 } });
+  const response = await c.record.p.updateRecord('record1', { name: 'Test', a: 1, data: { b: 2 } });
+  t.ok(response === undefined);
+  const rec = await c.record.p.snapshot('record1');
+  t.ok(rec.data.b === 2 && rec.data.a === undefined);
+  t.ok(true);
+});
+
+test('updateRecord overwrite', async t => {
+  const response = await c.record.p.updateRecord('record1', { name: 'Test', data: 3 }, 'overwrite');
+  t.ok(response === undefined);
+  const rec = await c.record.p.snapshot('record1');
+  t.ok(rec.data === 3 && rec.a === undefined);
+  t.ok(true);
+});
+
+test('updateRecord removeKeys', async t => {
+  const response = await c.record.p.updateRecord('record1', ['name'], 'removeKeys');
+  t.ok(response === undefined);
+  const rec = await c.record.p.snapshot('record1');
+  t.ok(rec.data === 3 && rec.name === undefined);
+  t.ok(true);
+});
+
+test('updateRecord deep', async t => {
+  await c.record.p.updateRecord('record1', {
+    data: { confs: [{ id: 'a', items: [1, 2] }, { id: 'b', items: [1, 2] }, { id: 'c' }] },
+  });
+  const response = await c.record.p.updateRecord(
+    'record1',
+    { data: { confs: [{ items: [3] }] } },
+    'deep',
+  );
+  t.ok(response === undefined);
+  const rec = await c.record.p.snapshot('record1');
+  t.ok(rec.data.confs[0].items.length === 2);
+  t.ok(rec.data.confs[0].items[0] === 3);
+  t.ok(true);
+});
+
+test('updateRecord deepConcat', async t => {
+  const response = await c.record.p.updateRecord(
+    'record1',
+    { data: { confs: [{ items: [1] }] } },
+    'deepConcat',
+  );
+  t.ok(response === undefined);
+  const rec = await c.record.p.snapshot('record1');
+  t.ok(rec.data.confs[0].items.length === 3);
+  t.ok(rec.data.confs[0].items[2] === 1);
+  t.ok(true);
+});
+
+test('updateRecord deepConcatAll', async t => {
+  const response = await c.record.p.updateRecord(
+    'record1',
+    { data: { confs: [{ id: 'd' }] } },
+    'deepConcatAll',
+  );
+  t.ok(response === undefined);
+  const rec = await c.record.p.snapshot('record1');
+  t.ok(rec.data.confs.length === 4);
+  t.ok(rec.data.confs[3].id === 'd');
+  t.ok(true);
+});
+
+test('updateRecord deepIgnore', async t => {
+  const response = await c.record.p.updateRecord(
+    'record1',
+    { data: { confs: ['%IGNORE%', { items: [3] }] } },
+    'deepIgnore',
+  );
+  t.ok(response === undefined);
+  const rec = await c.record.p.snapshot('record1');
+  t.ok(rec.data.confs[1].items.length === 2);
+  t.ok(rec.data.confs[1].items[0] === 3);
+  t.ok(true);
+});
+
+test('updateRecord deepConcatIgnore', async t => {
+  const response = await c.record.p.updateRecord(
+    'record1',
+    { data: { confs: ['%IGNORE%', { items: [1] }] } },
+    'deepConcatIgnore',
+  );
+  t.ok(response === undefined);
+  const rec = await c.record.p.snapshot('record1');
+  t.ok(rec.data.confs[1].items.length === 3);
+  t.ok(rec.data.confs[1].items[2] === 1);
+  t.ok(true);
+});
+
+test('updateRecord shallow non-existent', async t => {
+  t.shouldFail(c.record.p.updateRecord('record4', { name: 'Test', a: 1, data: { b: 2 } }));
+});
+
+test('updateRecord overwrite non-existent', async t => {
+  t.shouldFail(c.record.p.updateRecord('record4', { name: 'Test', data: 3 }, 'overwrite'));
+});
+
+test('updateRecord removeKeys non-existent', async t => {
+  t.shouldFail(c.record.p.updateRecord('record4', ['name'], 'removeKeys'));
+});
+
+test('updateRecord deep non-existent', async t => {
+  t.shouldFail(c.record.p.updateRecord('record4', { data: { confs: [{ items: [3] }] } }, 'deep'));
+});
+
+test('updateRecord deepConcat non-existent', async t => {
+  t.shouldFail(
+    c.record.p.updateRecord('record4', { data: { confs: [{ items: [1] }] } }, 'deepConcat'),
+  );
+});
+
+test('updateRecord deepConcatAll non-existent', async t => {
+  t.shouldFail(
+    c.record.p.updateRecord('record4', { data: { confs: [{ id: 'd' }] } }, 'deepConcatAll'),
+  );
+});
+
+test('updateRecord deepIgnore non-existent', async t => {
+  t.shouldFail(
+    c.record.p.updateRecord(
+      'record4',
+      { data: { confs: ['%IGNORE%', { items: [3] }] } },
+      'deepIgnore',
+    ),
+  );
+});
+
+test('updateRecord deepConcatIgnore non-existent', async t => {
+  t.shouldFail(
+    c.record.p.updateRecord(
+      'record4',
+      { data: { confs: ['%IGNORE%', { items: [1] }] } },
+      'deepConcatIgnore',
+    ),
+  );
+});
+
+
+test('updateRecord shallow', async t => {
+  const r = await c.record.p.getRecord('record1');
+  r.set({ name: 'Record1', data: { a: 1 } });
+  const response = await c.record.p.updateRecord('record1', { name: 'Test', a: 1, data: { b: 2 } });
+  t.ok(response === undefined);
+  const rec = await c.record.p.snapshot('record1');
+  t.ok(rec.data.b === 2 && rec.data.a === undefined);
+  t.ok(true);
+});
+
+test('updateRecord overwrite', async t => {
+  const response = await c.record.p.updateRecord('record1', { name: 'Test', data: 3 }, 'overwrite');
+  t.ok(response === undefined);
+  const rec = await c.record.p.snapshot('record1');
+  t.ok(rec.data === 3 && rec.a === undefined);
+  t.ok(true);
+});
+
+test('updateRecord removeKeys', async t => {
+  const response = await c.record.p.updateRecord('record1', ['name'], 'removeKeys');
+  t.ok(response === undefined);
+  const rec = await c.record.p.snapshot('record1');
+  t.ok(rec.data === 3 && rec.name === undefined);
+  t.ok(true);
+});
+
+test('updateRecord deep', async t => {
+  await c.record.p.updateRecord('record1', {
+    data: { confs: [{ id: 'a', items: [1, 2] }, { id: 'b', items: [1, 2] }, { id: 'c' }] },
+  });
+  const response = await c.record.p.updateRecord(
+    'record1',
+    { data: { confs: [{ items: [3] }] } },
+    'deep',
+  );
+  t.ok(response === undefined);
+  const rec = await c.record.p.snapshot('record1');
+  t.ok(rec.data.confs[0].items.length === 2);
+  t.ok(rec.data.confs[0].items[0] === 3);
+  t.ok(true);
+});
+
+test('updateRecord deepConcat', async t => {
+  const response = await c.record.p.updateRecord(
+    'record1',
+    { data: { confs: [{ items: [1] }] } },
+    'deepConcat',
+  );
+  t.ok(response === undefined);
+  const rec = await c.record.p.snapshot('record1');
+  t.ok(rec.data.confs[0].items.length === 3);
+  t.ok(rec.data.confs[0].items[2] === 1);
+  t.ok(true);
+});
+
+test('updateRecord deepConcatAll', async t => {
+  const response = await c.record.p.updateRecord(
+    'record1',
+    { data: { confs: [{ id: 'd' }] } },
+    'deepConcatAll',
+  );
+  t.ok(response === undefined);
+  const rec = await c.record.p.snapshot('record1');
+  t.ok(rec.data.confs.length === 4);
+  t.ok(rec.data.confs[3].id === 'd');
+  t.ok(true);
+});
+
+test('updateRecord deepIgnore', async t => {
+  const response = await c.record.p.updateRecord(
+    'record1',
+    { data: { confs: ['%IGNORE%', { items: [3] }] } },
+    'deepIgnore',
+  );
+  t.ok(response === undefined);
+  const rec = await c.record.p.snapshot('record1');
+  t.ok(rec.data.confs[1].items.length === 2);
+  t.ok(rec.data.confs[1].items[0] === 3);
+  t.ok(true);
+});
+
+test('updateRecord deepConcatIgnore', async t => {
+  const response = await c.record.p.updateRecord(
+    'record1',
+    { data: { confs: ['%IGNORE%', { items: [1] }] } },
+    'deepConcatIgnore',
+  );
+  t.ok(response === undefined);
+  const rec = await c.record.p.snapshot('record1');
+  t.ok(rec.data.confs[1].items.length === 3);
+  t.ok(rec.data.confs[1].items[2] === 1);
+  t.ok(true);
 });
 
 test('shutdown', t => {
