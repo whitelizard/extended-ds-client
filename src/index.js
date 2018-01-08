@@ -155,66 +155,99 @@ const updateModes = {
   removeKeys: undefined,
 }; // removeKeys ?
 
-function updateRecord(name, obj, mode = 'shallow', lockedKeys = [], protectedKeys = []) {
-  if (!Object.keys(updateModes).includes(mode)) throw new TypeError('Unsupported mode');
-  return this.record.hasP(name).then(() => {
-    lockedKeys.push(this.listedRecordIdKey);
-    if (mode === 'shallow') {
-      return Promise.all(
-        Object.entries(obj).reduce((promises, [key, value]) => {
-          if (!lockedKeys.includes(key)) {
-            promises.push(this.record.setDataP(name, key, value));
-          }
-          console.log(promises);
-          return promises;
-        }, []),
-      ).then(() => undefined);
-    } else if (mode === 'overwrite') {
-      if (lockedKeys.length + protectedKeys.length === 0) {
-        return this.record.setDataP(name, obj);
+function _$updateRecordShallow(name, obj, lockedKeys = []) {
+  return Promise.all(
+    Object.entries(obj).reduce((promises, [key, value]) => {
+      if (!lockedKeys.includes(key)) {
+        promises.push(this.record.setDataP(name, key, value));
       }
-      return this.record.getRecordP(name).then(r => {
-        const record = r.get();
-        lockedKeys.forEach(k => {
-          if (record[k] !== undefined) obj[k] = record[k];
-        });
-        protectedKeys.forEach(k => {
-          if (obj[k] === undefined && record[k] !== undefined) obj[k] = record[k];
-        });
-        r.set(obj);
-        r.discard();
-        return undefined;
-      });
-    } else if (mode === 'removeKeys') {
-      return this.record.getRecordP(name).then(r => {
-        const record = r.get();
-        obj.forEach(k => {
-          if (!lockedKeys.includes(k) && !protectedKeys.includes(k)) {
-            delete record[k];
-          }
-        });
-        r.set(record);
-        r.discard();
-        return undefined;
-      });
-    }
-    return this.record.getRecordP(name).then(r => {
-      const record = r.get();
-      const mergeFunc = updateModes[mode];
-      let newR;
-      if (mergeFunc) newR = mergeWith(record, obj, mergeFunc);
-      else newR = merge(record, obj);
-      lockedKeys.forEach(k => {
-        if (record[k] !== undefined) newR[k] = record[k];
-      });
-      protectedKeys.forEach(k => {
-        if (newR[k] === undefined && record[k] !== undefined) newR[k] = record[k];
-      });
-      r.set(newR);
-      r.discard();
-      return undefined;
+      return promises;
+    }, []),
+  ).then(() => undefined);
+}
+
+function _$updateRecordOverwrite(name, obj, lockedKeys = [], protectedKeys = []) {
+  if (lockedKeys.length + protectedKeys.length === 0) {
+    return this.record.setDataP(name, obj);
+  }
+  return this.record.getRecordP(name).then(r => {
+    const record = r.get();
+    lockedKeys.forEach(k => {
+      if (record[k] !== undefined) obj[k] = record[k];
     });
+    protectedKeys.forEach(k => {
+      if (obj[k] === undefined && record[k] !== undefined) obj[k] = record[k];
+    });
+    r.set(obj);
+    r.discard();
+    return undefined;
   });
+}
+
+function _$updateRecordRemoveKeys(name, obj, lockedKeys = [], protectedKeys = []) {
+  return this.record.getRecordP(name).then(r => {
+    const record = r.get();
+    obj.forEach(k => {
+      if (!lockedKeys.includes(k) && !protectedKeys.includes(k)) {
+        delete record[k];
+      }
+    });
+    r.set(record);
+    r.discard();
+    return undefined;
+  });
+}
+
+function _$updateRecordDeep(name, obj, mode = 'deep', lockedKeys = []) {
+  return this.record.getRecordP(name).then(r => {
+    const record = r.get();
+    const mergeFunc = updateModes[mode];
+    let newR;
+    const objKeys = Object.keys(obj);
+    lockedKeys.forEach(k => {
+      if (objKeys.includes(k)) delete obj[k];
+    });
+    if (mergeFunc) newR = mergeWith({ ...record }, obj, mergeFunc);
+    else newR = merge({ ...record }, obj);
+    r.set(newR);
+    r.discard();
+    return undefined;
+  });
+}
+
+// should never be called externally since it is undefined what happens if record does not exist
+function _$updateRecord(name, obj, mode = 'shallow', lockedKeys = [], protectedKeys = []) {
+  if (!Object.keys(updateModes).includes(mode)) throw new TypeError('Unsupported mode');
+  lockedKeys.push(this.listedRecordIdKey);
+  if (mode === 'shallow') {
+    return this.record._$updateRecordShallowP(name, obj, lockedKeys);
+  } else if (mode === 'overwrite') {
+    return this.record._$updateRecordOverwriteP(name, obj, lockedKeys, protectedKeys);
+  } else if (mode === 'removeKeys') {
+    return this.record._$updateRecordRemoveKeysP(name, obj, lockedKeys, protectedKeys);
+  }
+  return this.record._$updateRecordDeepP(name, obj, mode, lockedKeys);
+}
+
+function updateExistingRecord(name, obj, mode = 'shallow', lockedKeys = [], protectedKeys = []) {
+  return this.record
+    .hasP(name)
+    .then(() => this.record._$updateRecordP(name, obj, mode, lockedKeys, protectedKeys));
+}
+
+function getDatasetRecord(listPath, recordId) {
+  const id = recordId || this.getUid();
+  const rPath = `${listPath}${this.splitChar}${id}`;
+  return Promise.all([this.record.getListP(listPath), this.record.getRecordP(rPath)]).then(
+    ([l, r]) => {
+      // Update list:
+      if (this.datasetRecordFullPaths) addEntry(l, rPath);
+      else addEntry(l, id);
+      // Update record:
+      if (Object.keys(r.get()).length === 0) r.set({ [this.datasetRecordIdKey]: id });
+      return [l, r];
+    },
+  );
 }
 
 function getListedRecordP(
@@ -304,11 +337,17 @@ export function polyfill(obj, key, value) {
 export default function getClient(url, options) {
   const c = deepstream(url, options);
 
+  c.splitChar = options && options.splitChar !== undefined ? options.splitChar : '/';
+  c.datasetRecordFullPaths =
+    options && options.datasetRecordFullPaths !== undefined ? options.datasetRecordFullPaths : true;
+  c.datasetRecordIdKey =
+    options && options.datasetRecordIdKey !== undefined ? options.datasetRecordIdKey : 'id';
+
+  // TODO: OLD, remove in future release:
   c.listedRecordFullPaths =
     options && options.listedRecordFullPaths !== undefined ? options.listedRecordFullPaths : true;
   c.listedRecordIdKey =
     options && options.listedRecordIdKey !== undefined ? options.listedRecordIdKey : 'id';
-  c.splitChar = options && options.splitChar !== undefined ? options.splitChar : '/';
 
   polyfill(c, 'loginP', loginP.bind(c));
   polyfill(c.rpc, 'makeP', makeP.bind(c));
@@ -324,10 +363,19 @@ export default function getClient(url, options) {
   polyfill(c.record, 'setExistingRecordP', setExistingRecordP.bind(c));
   polyfill(c.record, 'addToListP', addToListP.bind(c));
   polyfill(c.record, 'removeFromListP', removeFromListP.bind(c));
+
+  polyfill(c.record, '_$updateRecordShallowP', _$updateRecordShallow.bind(c));
+  polyfill(c.record, '_$updateRecordOverwriteP', _$updateRecordOverwrite.bind(c));
+  polyfill(c.record, '_$updateRecordRemoveKeysP', _$updateRecordRemoveKeys.bind(c));
+  polyfill(c.record, '_$updateRecordDeepP', _$updateRecordDeep.bind(c));
+  polyfill(c.record, '_$updateRecordP', _$updateRecord.bind(c));
+  polyfill(c.record, 'updateExistingRecordP', updateExistingRecord.bind(c));
+  polyfill(c.record, 'getDatasetRecordP', getDatasetRecord.bind(c));
+
   polyfill(c.record, 'getListedRecordP', getListedRecordP.bind(c));
   polyfill(c.record, 'setListedRecordP', setListedRecordP.bind(c));
   polyfill(c.record, 'deleteListedRecordP', deleteListedRecordP.bind(c));
-  polyfill(c.record, 'updateRecordP', updateRecord.bind(c));
+
   // polyfill(c.event, 'subIfNot', subIfNot.bind(c));
 
   polyfill(c.record, 'removeListedRecordP', c.deleteListedRecordP); // Alias, backward comp.
@@ -353,10 +401,16 @@ export default function getClient(url, options) {
     setExistingRecord: c.record.setExistingRecordP,
     addToList: c.record.addToListP,
     removeFromList: c.record.removeFromListP,
+    _$updateRecordShallow: c.record._$updateRecordShallowP,
+    _$updateRecordOverwrite: c.record._$updateRecordOverwriteP,
+    _$updateRecordRemoveKeys: c.record._$updateRecordRemoveKeysP,
+    _$updateRecordDeep: c.record._$updateRecordDeepP,
+    _$updateRecord: c.record._$updateRecordP,
+    updateExistingRecord: c.record.updateExistingRecordP,
+    getDatasetRecord: c.record.getDatasetRecordP,
     getListedRecord: c.record.getListedRecordP,
     setListedRecord: c.record.setListedRecordP,
     deleteListedRecord: c.record.deleteListedRecordP,
-    updateRecord: c.record.updateRecordP,
     removeListedRecord: c.record.deleteListedRecordP, // Alias, backward comp.
   };
   polyfill(c.record, 'p', recordP);
