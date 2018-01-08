@@ -387,6 +387,54 @@ client.record.p.removeFromList('books', 'selfish-gene')
 | `listPath` | `string`         |         | The name/path of the record. |
 | `id`       | `string`/`Array` |         | Entry(ies) to add.           |
 
+### `record.p.updateExistingRecord`
+
+Alias: `record.updateExistingRecordP`
+
+Update a record, choosing from one of multiple update modes:
+
+* `shallow`: Default mode. Overwrite each property at the base level.
+* `overwrite`: Replace the whole record.
+* `deep`: Deep merge of the `updates` into record (using `lodash.merge`).
+* `deepConcat`: Deep merge, but concatenate arrays with only simple values.
+* `deepConcatAll`: Merge like `deepConcat`, but concatenate ALL arrays.
+* `deepIgnore`: Deep merge, but leave unchanged if some value in `updates` is `'%IGNORE%'`.
+* `deepConcatIgnore`: Merge like `deepConcat`, but skip values like `deepIgnore`.
+* `removeKeys`: With `updates` as an array, remove corresponding keys in record.
+
+Two additional array arguments, `lockedKeys` and `protectedKeys`, makes it possible to lock or protect given keys, regardless of update mode. Locked keys won't be altered and protected ones won't be removed.
+
+```js
+client.record.p.updateExistingRecord('record1', { a: 1, data: { b: 2 }})
+  .then(() => ...)
+  .catch(error => ...);
+
+client.record.p.updateExistingRecord(
+  'records/r-x',
+  { data: { configs: [{ items: ['toBeConcatenated'] }] } },
+  'deepConcat',
+)
+  .then(() => ...)
+  .catch(error => ...);
+
+client.record.p.updateExistingRecord(
+  'record1',
+  { data: { confs: ['%IGNORE%', { items: ['replacingFirstItem'] }] }, id: 'xb24' },
+  'deepIgnore',
+  ['id']
+)
+  .then(() => ...)
+  .catch(error => ...);
+```
+
+| Argument        | Type             | Default     | Description                                |
+| --------------- | ---------------- | ----------- | ------------------------------------------ |
+| `name`          | `string`         |             | The name/path of the record.               |
+| `updates`       | `Object`/`Array` |             | The updates. Array for mode = `removeKeys` |
+| `mode`          | `string`         | `"shallow"` | Update mode, see details above.            |
+| `lockedKeys`    | `Array`          |             | Keys which values can't be altered.        |
+| `protectedKeys` | `Array`          |             | Keys which can't be removed.               |
+
 ## Utility functions
 
 These are not extensions of the client object, but freely importable functions.

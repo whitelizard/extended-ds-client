@@ -229,10 +229,16 @@ function _$updateRecord(name, obj, mode = 'shallow', lockedKeys = [], protectedK
   return this.record._$updateRecordDeepP(name, obj, mode, lockedKeys);
 }
 
-function updateExistingRecord(name, obj, mode = 'shallow', lockedKeys = [], protectedKeys = []) {
+function updateExistingRecord(
+  name,
+  updates,
+  mode = 'shallow',
+  lockedKeys = [],
+  protectedKeys = [],
+) {
   return this.record
     .hasP(name)
-    .then(() => this.record._$updateRecordP(name, obj, mode, lockedKeys, protectedKeys));
+    .then(() => this.record._$updateRecordP(name, updates, mode, lockedKeys, protectedKeys));
 }
 
 function getDatasetRecord(listPath, recordId) {
@@ -250,6 +256,7 @@ function getDatasetRecord(listPath, recordId) {
   );
 }
 
+// TODO: remove in future release
 function getListedRecordP(
   listPath,
   recordId,
@@ -284,6 +291,7 @@ function getListedRecordP(
   );
 }
 
+// TODO: remove in future release
 function setListedRecordP(
   listPath,
   recordId,
@@ -311,6 +319,7 @@ function setListedRecordP(
     });
 }
 
+// TODO: remove in future release
 function deleteListedRecordP(listPath, recordId) {
   const rPath = `${listPath}${this.splitChar}${recordId}`;
   return Promise.all([
@@ -371,6 +380,7 @@ export default function getClient(url, options) {
   polyfill(c.record, 'updateExistingRecordP', updateExistingRecord.bind(c));
   polyfill(c.record, 'getDatasetRecordP', getDatasetRecord.bind(c));
 
+  // TODO: remove in future release
   polyfill(c.record, 'getListedRecordP', getListedRecordP.bind(c));
   polyfill(c.record, 'setListedRecordP', setListedRecordP.bind(c));
   polyfill(c.record, 'deleteListedRecordP', deleteListedRecordP.bind(c));
