@@ -427,6 +427,7 @@ MIT
   * listedRecordFullPaths -> datasetRecordFullPaths
   * listedRecordIdKey -> datasetRecordIdKey
 * Added a very versatile `updateExistingRecord` method
+* `record.p.has` now rejects on non-existent record
 
 ### 5.0
 
