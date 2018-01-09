@@ -256,71 +256,7 @@ function getDatasetRecord(listPath, recordId) {
   );
 }
 
-// TODO: remove in future release
-function getListedRecordP(
-  listPath,
-  recordId,
-  obj,
-  deepMerge,
-  overwrite,
-  deepMergeCustomizer,
-  lockedKeys,
-) {
-  const id = recordId || this.getUid();
-  const rPath = `${listPath}${this.splitChar}${id}`;
-  return Promise.all([this.record.getListP(listPath), this.record.getRecordP(rPath)]).then(
-    ([l, r]) => {
-      // Update list:
-      if (this.listedRecordFullPaths) addEntry(l, rPath);
-      else addEntry(l, id);
-      // Update record:
-      const record = r.get();
-      const newRecord = { ...obj, [this.listedRecordIdKey]: id };
-      if (Object.keys(record).length === 0) {
-        r.set(newRecord);
-      } else if (deepMerge) {
-        if (deepMergeCustomizer) r.set(mergeWith(record, newRecord, deepMergeCustomizer));
-        else r.set(merge(record, newRecord));
-      } else if (overwrite) {
-        r.set(newRecord);
-      } else {
-        Object.keys(newRecord).forEach(key => r.set(key, newRecord[key]));
-      }
-      return [l, r];
-    },
-  );
-}
-
-// TODO: remove in future release
-function setListedRecordP(
-  listPath,
-  recordId,
-  obj,
-  deepMerge,
-  overwrite,
-  deepMergeCustomizer,
-  lockedKeys,
-) {
-  return this.record
-    .getListedRecordP(
-      listPath,
-      recordId,
-      obj,
-      deepMerge,
-      overwrite,
-      deepMergeCustomizer,
-      lockedKeys,
-    )
-    .then(arr => {
-      const id = arr[1].get()[this.listedRecordIdKey];
-      arr[0].discard();
-      arr[1].discard();
-      return id;
-    });
-}
-
-// TODO: remove in future release
-function deleteListedRecordP(listPath, recordId) {
+function deleteDatasetRecord(listPath, recordId) {
   const rPath = `${listPath}${this.splitChar}${recordId}`;
   return Promise.all([
     this.record
@@ -352,12 +288,6 @@ export default function getClient(url, options) {
   c.datasetRecordIdKey =
     options && options.datasetRecordIdKey !== undefined ? options.datasetRecordIdKey : 'id';
 
-  // TODO: OLD, remove in future release:
-  c.listedRecordFullPaths =
-    options && options.listedRecordFullPaths !== undefined ? options.listedRecordFullPaths : true;
-  c.listedRecordIdKey =
-    options && options.listedRecordIdKey !== undefined ? options.listedRecordIdKey : 'id';
-
   polyfill(c, 'loginP', loginP.bind(c));
   polyfill(c.rpc, 'makeP', makeP.bind(c));
   polyfill(c.record, 'getRecordP', getRecordP.bind(c));
@@ -379,12 +309,7 @@ export default function getClient(url, options) {
   polyfill(c.record, '_$updateRecordP', _$updateRecord.bind(c));
   polyfill(c.record, 'updateExistingRecordP', updateExistingRecord.bind(c));
   polyfill(c.record, 'getDatasetRecordP', getDatasetRecord.bind(c));
-
-  // TODO: remove in future release
-  polyfill(c.record, 'getListedRecordP', getListedRecordP.bind(c));
-  polyfill(c.record, 'setListedRecordP', setListedRecordP.bind(c));
-  polyfill(c.record, 'deleteListedRecordP', deleteListedRecordP.bind(c));
-  polyfill(c.record, 'setExistingRecordP', setExistingRecordP.bind(c));
+  polyfill(c.record, 'deleteDatasetRecordP', deleteDatasetRecord.bind(c));
 
   // polyfill(c.event, 'subIfNot', subIfNot.bind(c));
 
@@ -418,10 +343,7 @@ export default function getClient(url, options) {
     _$updateRecord: c.record._$updateRecordP,
     updateExistingRecord: c.record.updateExistingRecordP,
     getDatasetRecord: c.record.getDatasetRecordP,
-    getListedRecord: c.record.getListedRecordP,
-    setListedRecord: c.record.setListedRecordP,
-    deleteListedRecord: c.record.deleteListedRecordP,
-    removeListedRecord: c.record.deleteListedRecordP, // Alias, backward comp.
+    deleteDatasetRecord: c.record.deleteDatasetRecordP,
   };
   polyfill(c.record, 'p', recordP);
 

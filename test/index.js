@@ -177,12 +177,14 @@ test('p.getDatasetRecord', async t => {
   t.ok(JSON.stringify(l.getEntries()) === '["records/record2"]');
 });
 
+let carId;
 test('getDatasetRecordP + auto id', async t => {
   const [l, r] = await cc.record.getDatasetRecordP('cars');
   const record = r.get();
-  t.ok(typeof record.rid === 'string' && record.rid.length > c.getUid().length - 4);
+  carId = record.rid;
+  t.ok(typeof carId === 'string' && carId.length > c.getUid().length - 4);
   // const l = await cc.record.getExistingListP('cars');
-  t.ok(JSON.stringify(l.getEntries()) === `["${record.rid}"]`);
+  t.ok(JSON.stringify(l.getEntries()) === `["${carId}"]`);
 });
 // test('p.getListedRecord deepMergeCustomizer', async t => {
 //   const [l, r] = await c.record.p.getListedRecord(
@@ -199,18 +201,19 @@ test('getDatasetRecordP + auto id', async t => {
 // });
 // test('p.getListedRecord fail', t => t.shouldFail(c.record.p.getListedRecord('l', 'r', false)));
 
-// test('p.deleteListedRecord', async t => {
-//   const l = await c.record.p.deleteListedRecord('records', 'record2');
-//   t.ok(l.getEntries().length === 0);
-// });
-// test('deleteListedRecordP', async t => {
-//   const l = await cc.record.deleteListedRecordP('cars', tId);
-//   t.ok(l.getEntries().length === 0);
-// });
-// test('p.deleteListedRecord non-existant list', async t => {
-//   const l = await c.record.p.deleteListedRecord('a', 'b');
-//   t.ok(l.getEntries().length === 0);
-// });
+test('p.deleteDatasetRecord', async t => {
+  const l = await c.record.p.deleteDatasetRecord('records', 'record2');
+  t.ok(l.getEntries().length === 0);
+  t.shouldFail(c.record.p.snapshot('records/record2'));
+});
+test('deleteDatasetRecordP', async t => {
+  const l = await cc.record.deleteDatasetRecordP('cars', carId);
+  t.ok(l.getEntries().length === 0);
+});
+test('p.deleteDatasetRecord non-existant list', async t => {
+  const l = await c.record.p.deleteDatasetRecord('a', 'b');
+  t.ok(l.getEntries().length === 0);
+});
 
 test('p.setData', async t => {
   await c.record.p.setData('record1', 'name', 'Test');

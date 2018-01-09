@@ -25,10 +25,6 @@ These are the additional functions:
 * [`record.p.getExistingList`](#recordpgetexistinglist) (alias: `record.getExistingListP`)
 * [`record.p.deleteRecord`](#recordpdeleterecord) (alias: `record.deleteRecordP`)
 * [`record.p.deleteList`](#recordpdeletelist) (alias: `record.deleteListP`)
-  <!-- - [`record.p.getListedRecord`](#recordpgetlistedrecord) (alias: `record.getListedRecordP`)
-* [`record.p.setListedRecord`](#recordpsetlistedrecord) (alias: `record.setListedRecordP`)
-* [`record.p.deleteListedRecord`](#recordpremovelistedrecord) (alias: `record.deleteListedRecordP`)
-* [`record.p.setExistingRecord`](#recordpsetexistingrecord) (alias: `record.setExistingRecordP`) -->
 * [`record.p.addToList`](#recordpaddtolist) (alias: `record.addToListP`)
 * [`record.p.removeFromList`](#recordpremovefromlist) (alias: `record.removeFromListP`)
 * [`record.p.updateExistingRecord`](#recordpupdateexistingrecord) (alias: `record.updateExistingRecordP`)
@@ -118,17 +114,17 @@ Default export from this module is the function `getClient` to create a client (
 
 ```js
 const client = getClient('localhost:6020', {
-  listedRecordFullPaths: false,
-  listedRecordIdKey: 'rid',
+  datasetRecordFullPaths: false,
+  datasetRecordIdKey: 'rid',
   splitChar: '.',
 });
 ```
 
-| Option                  | Type      | Default | Description                                                |
-| ----------------------- | --------- | ------- | ---------------------------------------------------------- |
-| `listedRecordFullPaths` | `boolean` | true    | Full paths in lists (or only id) for listedRecord methods. |
-| `listedRecordIdKey`     | `string`  | `'id'`  | ID key for listed records.                                 |
-| `splitChar`             | `string`  | `'/'`   | Splitting character in paths (for listed records).         |
+| Option                   | Type      | Default | Description                                                 |
+| ------------------------ | --------- | ------- | ----------------------------------------------------------- |
+| `datasetRecordFullPaths` | `boolean` | true    | Full paths in lists (or only id) for datasetRecord methods. |
+| `datasetRecordIdKey`     | `string`  | `'id'`  | ID key for dataset records.                                 |
+| `splitChar`              | `string`  | `'/'`   | Splitting character in paths (for dataset records).         |
 
 ## Promisification API
 
@@ -273,86 +269,6 @@ client.record.p.deleteList(arg)
 | -------- | ----------------- | ------- | ------------------------------------------- |
 | `arg`    | `string`/`Object` |         | The path to the list _OR_ a DS List object. |
 
-<!-- ### `record.p.getListedRecord`
-
-Alias: `record.getListedRecordP`
-
-In case you often end up with the structure of having a list of some type of records as the "parent" of those records. For example a list of all books at `books` and the books at `books/selfish-gene`, `books/one-child` etc.
-
-Supports different merge strategies. Default is a shallow merge.
-
-On resolve you get back both the deepstream list handle and record handle.
-
-The options described in [`getClient`](#getclient) above will influence how this function operates.
-
-```js
-client.record.p.getListedRecord('books', 'selfish-gene', { author: 'R Dawkins', title: 'The Selfish Gene' })
-  .then(([dsList, dsRecord]) => {
-    const book = dsRecord.get();
-    console.log(dsList.getEntries());
-    console.log(book.author, '-', book.title);
-  });
-```
-
-| Argument | Type | Default | Description |
-| -------- | ---- | ------- | ----------- |
-| `listPath` | `string` | | The path to the list. |
-| `recordId` | `string` | | The ID of the record. |
-| `obj` | `Object` | | An object with either an entire record or updates to merge into it. |
-| `deepMerge` | `boolean` | `false` | Will turn on deep merge of `obj` into the record. |
-| `overwrite` | `boolean` | `false` | Will replace the record with `obj`. |
-| `deepMergeCustomizer` | `Function` | | Custom merge handler (when `deepMerge` = `true`). |
-
-### `record.p.setListedRecord`
-
-Alias: `record.setListedRecordP`
-
-The same as `record.p.getListedRecord` but without getting handles back, instead you only get the record id. It will discard the handles used internally.
-
-```js
-client.record.p.setListedRecord('books', undefined, { author: 'R Dawkins', title: 'The Selfish Gene' })
-  .then(id => {
-    console.log('The record got the automatic id:', id);
-  });
-```
-
-### `record.p.deleteListedRecord`
-
-Alias: `record.deleteListedRecordP`
-
-Removes both a record and its entry in the list, as created with `getListedRecord`.
-
-```js
-client.record.p.deleteListedRecord('books', 'selfish-gene').then(dsList => {
-  console.log('List of records after delete:', dsList.getEntries());
-});
-```
-
-| Argument | Type | Default | Description |
-| -------- | ---- | ------- | ----------- |
-| `listPath` | `string` | | The path to the list. |
-| `recordId` | `string` | | The ID of the record. |
-
-### `record.p.setExistingRecord`
-
-Alias: `record.setExistingRecordP`
-
-Update an existing record, with possibility of different merge strategies. Default is a shallow merge.
-
-```js
-client.record.p.setExistingRecord('books/selfish-gene', { author: 'Richard Dawkins' })
-  .then(dsRecord => ...)
-  .catch(error => ...);
-```
-
-| Argument | Type | Default | Description |
-| -------- | ---- | ------- | ----------- |
-| `name` | `string` | | The name/path of the record. |
-| `obj` | `Object` | | An object with either an entire record or updates to merge into it. |
-| `deepMerge` | `boolean` | `false` | Will turn on deep merge of `obj` into the record. |
-| `overwrite` | `boolean` | `false` | Will replace the record with `obj`. |
-| `deepMergeCustomizer` | `Function` | | Custom merge handler (when `deepMerge` = `true`). | -->
-
 ### `record.p.addToList`
 
 Alias: `record.addToListP`
@@ -435,6 +351,46 @@ client.record.p.updateExistingRecord(
 | `lockedKeys`    | `Array`          |             | Keys which values can't be altered.        |
 | `protectedKeys` | `Array`          |             | Keys which can't be removed.               |
 
+### `record.p.getDatasetRecord`
+
+Alias: `record.getDatasetRecordP`
+
+In case you often end up with the structure of having a list of some type of records as the "parent" of those records. For example a list of all bookings at `bookings` and the bookings at `bookings/room-19`, `bookings/room-27` etc.
+
+On resolve you get back both the deepstream list handle and record handle.
+
+The options described in [`getClient`](#getclient) above will influence how this function operates.
+
+```js
+client.record.p.getDatasetRecord('bookings', 'room-27').then(([dsList, dsRecord]) => {
+  const booking = dsRecord.get();
+  console.log(dsList.getEntries());
+  console.log(booking.time, '-', booking.customer);
+});
+```
+
+| Argument   | Type     | Default | Description           |
+| ---------- | -------- | ------- | --------------------- |
+| `listPath` | `string` |         | The path to the list. |
+| `recordId` | `string` |         | The ID of the record. |
+
+### `record.p.deleteDatasetRecord`
+
+Alias: `record.deleteDatasetRecordP`
+
+Removes both a record and its entry in the list, as created with `getDatasetRecord`.
+
+```js
+client.record.p.deleteDatasetRecord('bookings', 'room-27').then(dsList => {
+  console.log('List of records after delete:', dsList.getEntries());
+});
+```
+
+| Argument   | Type     | Default | Description           |
+| ---------- | -------- | ------- | --------------------- |
+| `listPath` | `string` |         | The path to the list. |
+| `recordId` | `string` |         | The ID of the record. |
+
 ## Utility functions
 
 These are not extensions of the client object, but freely importable functions.
@@ -464,6 +420,14 @@ MIT
 
 ## Change log
 
+### 6.0
+
+* Removed `\*ListedRecord` in favor of new `getDatasetRecord` & `deleteDatasetRecord`
+* Name changes of options
+  * listedRecordFullPaths -> datasetRecordFullPaths
+  * listedRecordIdKey -> datasetRecordIdKey
+* Added a very versatile `updateExistingRecord` method
+
 ### 5.0
 
 * Added `getListedRecord` that returns list & record handles
@@ -473,8 +437,8 @@ MIT
 * Added method `deleteListedRecord`
 * `addToList` & `removeFromList` now also accepts multiple entries
 * Options added that controls how `*listedRecord` operates
-  * listedRecordFullPaths
-  * listedRecordIdKey
+  * datasetRecordFullPaths
+  * datasetRecordIdKey
   * splitChar
 
 ### 4.0
