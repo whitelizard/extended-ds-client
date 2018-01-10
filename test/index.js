@@ -156,20 +156,6 @@ test('p.removeFromList multi', async t => {
 });
 test('p.addToList fail', t => t.shouldFail(c.record.p.addToList('list1', [44])));
 
-// test('p.setExistingRecord + deepMerge', async t => {
-//   const r = await c.record.p.setExistingRecord('record1', { data: { b: 2 } }, true);
-//   t.ok(JSON.stringify(r.get()) === '{"name":"Record1","data":{"a":1,"b":2}}');
-// });
-// test('setExistingRecordP + default update mode', async t => {
-//   const r = await c.record.setExistingRecordP('record1', { data: 5 });
-//   t.ok(JSON.stringify(r.get()) === '{"name":"Record1","data":5}');
-// });
-// test('p.setExistingRecord fail', t => t.shouldFail(c.record.p.setExistingRecord('record1')));
-// test('p.setExistingRecord + overwrite', async t => {
-//   const r = await c.record.p.setExistingRecord('record1', { title: 'The Record' }, false, true);
-//   t.ok(JSON.stringify(r.get()) === '{"title":"The Record"}');
-// });
-
 test('p.getDatasetRecord', async t => {
   const [l, r] = await c.record.p.getDatasetRecord('records', 'record2');
   const rec = r.get();
@@ -186,21 +172,6 @@ test('getDatasetRecordP + auto id', async t => {
   // const l = await cc.record.getExistingListP('cars');
   t.ok(JSON.stringify(l.getEntries()) === `["${carId}"]`);
 });
-// test('p.getListedRecord deepMergeCustomizer', async t => {
-//   const [l, r] = await c.record.p.getListedRecord(
-//     'records',
-//     'record2',
-//     { data: [2] },
-//     true,
-//     undefined,
-//     (d, s) => Array.isArray(d) && d.concat(s),
-//   );
-//   const rec = r.get();
-//   t.ok(rec.data.length === 2);
-//   l.discard();
-// });
-// test('p.getListedRecord fail', t => t.shouldFail(c.record.p.getListedRecord('l', 'r', false)));
-
 test('p.deleteDatasetRecord', async t => {
   const l = await c.record.p.deleteDatasetRecord('records', 'record2');
   t.ok(l.getEntries().length === 0);
@@ -213,6 +184,14 @@ test('deleteDatasetRecordP', async t => {
 test('p.deleteDatasetRecord non-existant list', async t => {
   const l = await c.record.p.deleteDatasetRecord('a', 'b');
   t.ok(l.getEntries().length === 0);
+});
+
+test('p.getDatasetRecord initiate', async t => {
+  const [l, r] = await c.record.p.getDatasetRecord('records', 'record2', { name: 'Test' });
+  const rec = r.get();
+  t.ok(rec.id === 'record2');
+  t.ok(rec.name === 'Test');
+  t.ok(JSON.stringify(l.getEntries()) === '["records/record2"]');
 });
 
 test('p.setData', async t => {

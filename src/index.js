@@ -75,21 +75,21 @@ function getExistingP(type, pathStr) {
   return this.record.hasP(pathStr).then(() => this.record[`get${type}P`](pathStr));
 }
 
-function setExistingRecordP(name, obj, deepMerge, overwrite, deepMergeCustomizer) {
-  // TODO: Remove in future release
-  return this.record.getExistingRecordP(name).then(r => {
-    if (deepMerge) {
-      const record = r.get();
-      if (deepMergeCustomizer) r.set(mergeWith(record, obj, deepMergeCustomizer));
-      else r.set(merge(record, obj));
-    } else if (overwrite) {
-      r.set(obj);
-    } else {
-      Object.keys(obj).forEach(key => r.set(key, obj[key]));
-    }
-    return r;
-  });
-}
+// function setExistingRecordP(name, obj, deepMerge, overwrite, deepMergeCustomizer) {
+//   // TODO: Remove in future release
+//   return this.record.getExistingRecordP(name).then(r => {
+//     if (deepMerge) {
+//       const record = r.get();
+//       if (deepMergeCustomizer) r.set(mergeWith(record, obj, deepMergeCustomizer));
+//       else r.set(merge(record, obj));
+//     } else if (overwrite) {
+//       r.set(obj);
+//     } else {
+//       Object.keys(obj).forEach(key => r.set(key, obj[key]));
+//     }
+//     return r;
+//   });
+// }
 
 function addToListP(listPath, id) {
   // TODO: Need to listen to the add event ??
@@ -241,7 +241,7 @@ function updateExistingRecord(
     .then(() => this.record._$updateRecordP(name, updates, mode, lockedKeys, protectedKeys));
 }
 
-function getDatasetRecord(listPath, recordId) {
+function getDatasetRecord(listPath, recordId, initiation = {}) {
   const id = recordId || this.getUid();
   const rPath = `${listPath}${this.splitChar}${id}`;
   return Promise.all([this.record.getListP(listPath), this.record.getRecordP(rPath)]).then(
@@ -250,7 +250,9 @@ function getDatasetRecord(listPath, recordId) {
       if (this.datasetRecordFullPaths) addEntry(l, rPath);
       else addEntry(l, id);
       // Update record:
-      if (Object.keys(r.get()).length === 0) r.set({ [this.datasetRecordIdKey]: id });
+      if (Object.keys(r.get()).length === 0) {
+        r.set({ [this.datasetRecordIdKey]: id, ...initiation });
+      }
       return [l, r];
     },
   );
@@ -263,7 +265,7 @@ function deleteDatasetRecord(listPath, recordId) {
       .getExistingRecordP(rPath)
       .then(r => r.delete())
       .catch(() => undefined),
-    this.record.removeFromListP(listPath, this.listedRecordFullPaths ? rPath : recordId),
+    this.record.removeFromListP(listPath, this.datasetRecordFullPaths ? rPath : recordId),
   ]).then(arr => arr[1]);
 }
 

@@ -369,10 +369,11 @@ client.record.p.getDatasetRecord('bookings', 'room-27').then(([dsList, dsRecord]
 });
 ```
 
-| Argument   | Type     | Default | Description           |
-| ---------- | -------- | ------- | --------------------- |
-| `listPath` | `string` |         | The path to the list. |
-| `recordId` | `string` |         | The ID of the record. |
+| Argument     | Type     | Default | Description                            |
+| ------------ | -------- | ------- | -------------------------------------- |
+| `listPath`   | `string` |         | The path to the list.                  |
+| `recordId`   | `string` |         | The ID of the record.                  |
+| `initiation` | `Object` |         | If created, initiate record with this. |
 
 ### `record.p.deleteDatasetRecord`
 
