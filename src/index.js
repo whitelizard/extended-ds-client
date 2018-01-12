@@ -218,7 +218,7 @@ function _$updateRecordDeep(name, obj, mode = 'deep', lockedKeys = []) {
 // should never be called externally since it is undefined what happens if record does not exist
 function _$updateRecord(name, obj, mode = 'shallow', lockedKeys = [], protectedKeys = []) {
   if (!Object.keys(updateModes).includes(mode)) throw new TypeError('Unsupported mode');
-  lockedKeys.push(this.listedRecordIdKey);
+  lockedKeys.push(this.datasetRecordIdKey);
   if (mode === 'shallow') {
     return this.record._$updateRecordShallowP(name, obj, lockedKeys);
   } else if (mode === 'overwrite') {
@@ -315,7 +315,7 @@ export default function getClient(url, options) {
 
   // polyfill(c.event, 'subIfNot', subIfNot.bind(c));
 
-  polyfill(c.record, 'removeListedRecordP', c.deleteListedRecordP); // Alias, backward comp.
+  // polyfill(c.record, 'removeListedRecordP', c.deleteListedRecordP); // Alias, backward comp.
 
   const rootP = {
     login: c.loginP,
