@@ -193,10 +193,15 @@ Alias: `record.hasP`
 
 Promisification of `record.has`, but will reject if it does not exist (and on error of course).
 
+A second optional argument makes the check inverted -- rejecting on existing record. (This can be handy to make sure an id is free).
+
 ```js
 client.record.p.has(name)
   .then(() => ...)
   .catch(error => ...);
+
+await client.record.p.has('record1');
+// if we get here, record1 is a non-taken record id
 ```
 
 ### `rpc.p.make`
