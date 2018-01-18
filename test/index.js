@@ -101,6 +101,11 @@ test('hasP', async t => {
 });
 test('p.has fail', t => t.shouldFail(c.record.p.has(44)));
 test('p.has fail', t => t.shouldFail(c.record.p.has('record99')));
+test('p.has inverted', async t => {
+  const res = await c.record.p.has('record99', true);
+  t.ok(res === undefined);
+});
+test('p.has inverted fail', t => t.shouldFail(c.record.p.has('record1', true)));
 // test('p.has fail 2', async t => {
 //   const res = await c.record.p.has('record99');
 //   t.ok(res === false);

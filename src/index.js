@@ -35,11 +35,11 @@ function getListP(name) {
   return new Promise(resolve => this.record.getList(name).whenReady(resolve));
 }
 
-function hasP(name) {
+function hasP(name, invert) {
   return new Promise((resolve, reject) =>
     this.record.has(name, (error, hasRecord) => {
-      if (!error && hasRecord) resolve();
-      else reject(new Error(error ? error : 'Record does not exist'));
+      if (!error && (invert ? !hasRecord : hasRecord)) resolve();
+      else reject(new Error(error || `Record does ${invert ? '' : 'not'} exist`));
     }),
   );
 }
