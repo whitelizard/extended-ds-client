@@ -165,7 +165,8 @@ const updateModes = {
 //     }, []),
 //   ).then(() => undefined);
 // }
-// TODO: Temporary to dodge deepstream bug where consecutive setData overwrites cbs
+// NOTE: Temporary solution to dodge deepstream bug where consecutive setData overwrites callbacks
+//       Property updates are made sequential instead of in parallel
 async function _$updateRecordShallow(name, obj, lockedKeys = []) {
   for (const [key, value] of Object.entries(obj)) {
     if (!lockedKeys.includes(key)) {
