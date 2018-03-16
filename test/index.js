@@ -4,6 +4,7 @@ import getClient, { addEntry, polyfill, CONSTANTS, MERGE_STRATEGIES } from '../s
 
 const server = new Deepstream();
 server.start();
+
 const c = getClient('localhost:6020');
 const cc = getClient('localhost:6020', {
   listedRecordFullPaths: false,
@@ -106,10 +107,6 @@ test('p.has inverted', async t => {
   t.ok(res === undefined);
 });
 test('p.has inverted fail', t => t.shouldFail(c.record.p.has('record1', true)));
-// test('p.has fail 2', async t => {
-//   const res = await c.record.p.has('record99');
-//   t.ok(res === false);
-// });
 
 test('p.getExistingRecord', async t => {
   const r = await c.record.p.getExistingRecord('record1');
@@ -233,15 +230,21 @@ test('p.deleteList', async t => {
 test('updateExistingRecord shallow', async t => {
   const r = await c.record.p.getRecord('record1');
   r.set({ name: 'Record1', data: { a: 1 } });
-  const response = await c.record.p.updateExistingRecord('record1', {
-    name: 'Test',
-    a: 1,
-    data: { b: 2 },
-  });
-  t.ok(response === undefined);
+  const response = await c.record.p.updateExistingRecord(
+    'record1',
+    {
+      name: 'Test',
+      a: 2,
+      data: { b: 3 },
+    },
+    'shallow',
+    ['d', 'e', 'f', 'g'],
+    ['h', 'i', 'j', 'k'],
+  );
+  t.equals(response, undefined);
   const rec = await c.record.p.snapshot('record1');
-  t.ok(rec.data.b === 2 && rec.data.a === undefined);
-  t.ok(true);
+  t.equals(rec.data.b, 3);
+  t.equals(rec.data.a, undefined);
 });
 
 test('updateExistingRecord overwrite', async t => {
@@ -335,54 +338,6 @@ test('updateExistingRecord deepConcatIgnore', async t => {
 test('updateExistingRecord shallow non-existent', async t => {
   t.shouldFail(c.record.p.updateExistingRecord('record4'));
 });
-
-// test('updateExistingRecord shallow non-existent', async t => {
-//   t.shouldFail(c.record.p.updateExistingRecord('record4', { name: 'Test', a: 1, data: { b: 2 } }));
-// });
-//
-// test('updateExistingRecord overwrite non-existent', async t => {
-//   t.shouldFail(c.record.p.updateExistingRecord('record4', { name: 'Test', data: 3 }, 'overwrite'));
-// });
-//
-// test('updateExistingRecord removeKeys non-existent', async t => {
-//   t.shouldFail(c.record.p.updateExistingRecord('record4', ['name'], 'removeKeys'));
-// });
-//
-// test('updateExistingRecord deep non-existent', async t => {
-//   t.shouldFail(c.record.p.updateExistingRecord('record4', { data: { confs: [{ items: [3] }] } }, 'deep'));
-// });
-//
-// test('updateExistingRecord deepConcat non-existent', async t => {
-//   t.shouldFail(
-//     c.record.p.updateExistingRecord('record4', { data: { confs: [{ items: [1] }] } }, 'deepConcat'),
-//   );
-// });
-//
-// test('updateExistingRecord deepConcatAll non-existent', async t => {
-//   t.shouldFail(
-//     c.record.p.updateExistingRecord('record4', { data: { confs: [{ id: 'd' }] } }, 'deepConcatAll'),
-//   );
-// });
-//
-// test('updateExistingRecord deepIgnore non-existent', async t => {
-//   t.shouldFail(
-//     c.record.p.updateExistingRecord(
-//       'record4',
-//       { data: { confs: ['%IGNORE%', { items: [3] }] } },
-//       'deepIgnore',
-//     ),
-//   );
-// });
-//
-// test('updateExistingRecord deepConcatIgnore non-existent', async t => {
-//   t.shouldFail(
-//     c.record.p.updateExistingRecord(
-//       'record4',
-//       { data: { confs: ['%IGNORE%', { items: [1] }] } },
-//       'deepConcatIgnore',
-//     ),
-//   );
-// });
 
 test('updateExistingRecord shallow lockedKeys protectedKeys', async t => {
   const r = await c.record.p.getRecord('record1');

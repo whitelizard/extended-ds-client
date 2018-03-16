@@ -155,15 +155,24 @@ const updateModes = {
   removeKeys: undefined,
 }; // removeKeys ?
 
-function _$updateRecordShallow(name, obj, lockedKeys = []) {
-  return Promise.all(
-    Object.entries(obj).reduce((promises, [key, value]) => {
-      if (!lockedKeys.includes(key)) {
-        promises.push(this.record.setDataP(name, key, value));
-      }
-      return promises;
-    }, []),
-  ).then(() => undefined);
+// function _$updateRecordShallow(name, obj, lockedKeys = []) {
+//   return Promise.all(
+//     Object.entries(obj).reduce((promises, [key, value]) => {
+//       if (!lockedKeys.includes(key)) {
+//         promises.push(this.record.setDataP(name, key, value));
+//       }
+//       return promises;
+//     }, []),
+//   ).then(() => undefined);
+// }
+// TODO: Temporary to dodge deepstream bug where consecutive setData overwrites cbs
+async function _$updateRecordShallow(name, obj, lockedKeys = []) {
+  for (const [key, value] of Object.entries(obj)) {
+    if (!lockedKeys.includes(key)) {
+      //eslint-disable-next-line
+      await this.record.setDataP(name, key, value);
+    }
+  }
 }
 
 function _$updateRecordOverwrite(name, obj, lockedKeys = [], protectedKeys = []) {
