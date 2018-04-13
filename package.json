@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/whitelizard/extended-ds-client#readme",
   "dependencies": {
+    "babel-polyfill": "^6.26.0",
     "deepstream.io-client-js": "^2.3.0",
     "lodash.isobject": "^3.0.2",
     "lodash.merge": "^4.6.0",
