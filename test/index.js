@@ -56,6 +56,15 @@ test('makeP', async t => {
 });
 test('p.make fail', t => t.shouldFail(c.rpc.p.make(44)));
 
+test('o().subscribe', async t => {
+  let res = 0;
+  const obs = await c.event.o('channel1').subscribe(v => {
+    res += v;
+  });
+  c.event.emit('channel1', 2);
+  t.ok(res === 2);
+});
+
 test('p.getRecord', async t => {
   const r = await c.record.p.getRecord('record1');
   const rec = r.get();

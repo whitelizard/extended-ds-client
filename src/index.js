@@ -4,8 +4,8 @@ import merge from 'lodash.merge';
 import mergeWith from 'lodash.mergewith';
 import isObject from 'lodash.isobject';
 
-export const CONSTANTS = deepstream.CONSTANTS;
-export const MERGE_STRATEGIES = deepstream.MERGE_STRATEGIES;
+export const { CONSTANTS } = deepstream;
+export const { MERGE_STRATEGIES } = deepstream;
 export const statuses = deepstream.CONSTANTS.CONNECTION_STATE; // Depricated
 
 /**
@@ -24,8 +24,7 @@ function loginP(authParams) {
     this.login(authParams, (success, data) => {
       if (success) resolve(data);
       else reject(new Error(data));
-    }),
-  );
+    }));
 }
 
 function getRecordP(name) {
@@ -41,8 +40,7 @@ function hasP(name, invert) {
     this.record.has(name, (error, hasRecord) => {
       if (!error && (invert ? !hasRecord : hasRecord)) resolve();
       else reject(new Error(error || `Record does ${invert ? '' : 'not'} exist`));
-    }),
-  );
+    }));
 }
 
 function snapshotP(name) {
@@ -50,8 +48,7 @@ function snapshotP(name) {
     this.record.snapshot(name, (error, data) => {
       if (!error) resolve(data);
       else reject(new Error(error));
-    }),
-  );
+    }));
 }
 
 function setDataP(name, path, data) {
@@ -59,8 +56,7 @@ function setDataP(name, path, data) {
     this.record.setData(name, path, data, error => {
       if (!error) resolve();
       else reject(new Error(error));
-    }),
-  );
+    }));
 }
 
 function makeP(name, data) {
@@ -68,8 +64,7 @@ function makeP(name, data) {
     this.rpc.make(name, data, (error, result) => {
       if (!error) resolve(result);
       else reject(new Error(error));
-    }),
-  );
+    }));
 }
 
 function getExistingP(type, pathStr) {
@@ -171,7 +166,7 @@ const updateModes = {
 async function _$updateRecordShallow(name, obj, lockedKeys = []) {
   for (const [key, value] of Object.entries(obj)) {
     if (!lockedKeys.includes(key)) {
-      //eslint-disable-next-line
+      // eslint-disable-next-line
       await this.record.setDataP(name, key, value);
     }
   }
@@ -255,18 +250,16 @@ function updateExistingRecord(
 function getDatasetRecord(listPath, recordId, initiation = {}) {
   const id = recordId || this.getUid();
   const rPath = `${listPath}${this.splitChar}${id}`;
-  return Promise.all([this.record.getListP(listPath), this.record.getRecordP(rPath)]).then(
-    ([l, r]) => {
-      // Update list:
-      if (this.datasetRecordFullPaths) addEntry(l, rPath);
-      else addEntry(l, id);
-      // Update record:
-      if (Object.keys(r.get()).length === 0) {
-        r.set({ [this.datasetRecordIdKey]: id, ...initiation });
-      }
-      return [l, r];
-    },
-  );
+  return Promise.all([this.record.getListP(listPath), this.record.getRecordP(rPath)]).then(([l, r]) => {
+    // Update list:
+    if (this.datasetRecordFullPaths) addEntry(l, rPath);
+    else addEntry(l, id);
+    // Update record:
+    if (Object.keys(r.get()).length === 0) {
+      r.set({ [this.datasetRecordIdKey]: id, ...initiation });
+    }
+    return [l, r];
+  });
 }
 
 function deleteDatasetRecord(listPath, recordId) {
@@ -285,6 +278,10 @@ function deleteDatasetRecord(listPath, recordId) {
 //   return this.event.subscribe(name, callback);
 // }
 
+function getObservable(name) {
+  Observable.create(observer => {});
+}
+
 export function polyfill(obj, key, value) {
   if (typeof obj[key] === 'undefined') {
     // eslint-disable-next-line
@@ -301,41 +298,42 @@ export default function getClient(url, options) {
   c.datasetRecordIdKey =
     options && options.datasetRecordIdKey !== undefined ? options.datasetRecordIdKey : 'id';
 
-  polyfill(c, 'loginP', loginP.bind(c));
-  polyfill(c.rpc, 'makeP', makeP.bind(c));
-  polyfill(c.record, 'getRecordP', getRecordP.bind(c));
-  polyfill(c.record, 'getListP', getListP.bind(c));
-  polyfill(c.record, 'setDataP', setDataP.bind(c));
-  polyfill(c.record, 'snapshotP', snapshotP.bind(c));
-  polyfill(c.record, 'hasP', hasP.bind(c));
-  polyfill(c.record, 'getExistingRecordP', getExistingP.bind(c, 'Record'));
-  polyfill(c.record, 'getExistingListP', getExistingP.bind(c, 'List'));
-  polyfill(c.record, 'deleteRecordP', deleteP.bind(c, 'Record'));
-  polyfill(c.record, 'deleteListP', deleteP.bind(c, 'List'));
-  polyfill(c.record, 'addToListP', addToListP.bind(c));
-  polyfill(c.record, 'removeFromListP', removeFromListP.bind(c));
+  const pf = polyfill;
+  pf(c, 'loginP', loginP.bind(c));
+  pf(c.rpc, 'makeP', makeP.bind(c));
+  pf(c.record, 'getRecordP', getRecordP.bind(c));
+  pf(c.record, 'getListP', getListP.bind(c));
+  pf(c.record, 'setDataP', setDataP.bind(c));
+  pf(c.record, 'snapshotP', snapshotP.bind(c));
+  pf(c.record, 'hasP', hasP.bind(c));
+  pf(c.record, 'getExistingRecordP', getExistingP.bind(c, 'Record'));
+  pf(c.record, 'getExistingListP', getExistingP.bind(c, 'List'));
+  pf(c.record, 'deleteRecordP', deleteP.bind(c, 'Record'));
+  pf(c.record, 'deleteListP', deleteP.bind(c, 'List'));
+  pf(c.record, 'addToListP', addToListP.bind(c));
+  pf(c.record, 'removeFromListP', removeFromListP.bind(c));
 
-  polyfill(c.record, '_$updateRecordShallowP', _$updateRecordShallow.bind(c));
-  polyfill(c.record, '_$updateRecordOverwriteP', _$updateRecordOverwrite.bind(c));
-  polyfill(c.record, '_$updateRecordRemoveKeysP', _$updateRecordRemoveKeys.bind(c));
-  polyfill(c.record, '_$updateRecordDeepP', _$updateRecordDeep.bind(c));
-  polyfill(c.record, '_$updateRecordP', _$updateRecord.bind(c));
-  polyfill(c.record, 'updateExistingRecordP', updateExistingRecord.bind(c));
-  polyfill(c.record, 'getDatasetRecordP', getDatasetRecord.bind(c));
-  polyfill(c.record, 'deleteDatasetRecordP', deleteDatasetRecord.bind(c));
+  pf(c.record, '_$updateRecordShallowP', _$updateRecordShallow.bind(c));
+  pf(c.record, '_$updateRecordOverwriteP', _$updateRecordOverwrite.bind(c));
+  pf(c.record, '_$updateRecordRemoveKeysP', _$updateRecordRemoveKeys.bind(c));
+  pf(c.record, '_$updateRecordDeepP', _$updateRecordDeep.bind(c));
+  pf(c.record, '_$updateRecordP', _$updateRecord.bind(c));
+  pf(c.record, 'updateExistingRecordP', updateExistingRecord.bind(c));
+  pf(c.record, 'getDatasetRecordP', getDatasetRecord.bind(c));
+  pf(c.record, 'deleteDatasetRecordP', deleteDatasetRecord.bind(c));
 
-  // polyfill(c.event, 'subIfNot', subIfNot.bind(c));
+  pf(c.event, 'o', getObservable.bind(c));
 
-  // polyfill(c.record, 'removeListedRecordP', c.deleteListedRecordP); // Alias, backward comp.
+  // pf(c.event, 'subIfNot', subIfNot.bind(c));
 
   const rootP = {
     login: c.loginP,
   };
-  polyfill(c, 'p', rootP);
+  pf(c, 'p', rootP);
   const rpcP = {
     make: c.rpc.makeP,
   };
-  polyfill(c.rpc, 'p', rpcP);
+  pf(c.rpc, 'p', rpcP);
   const recordP = {
     getRecord: c.record.getRecordP,
     getList: c.record.getListP,
@@ -358,7 +356,7 @@ export default function getClient(url, options) {
     getDatasetRecord: c.record.getDatasetRecordP,
     deleteDatasetRecord: c.record.deleteDatasetRecordP,
   };
-  polyfill(c.record, 'p', recordP);
+  pf(c.record, 'p', recordP);
 
   return c;
 }
