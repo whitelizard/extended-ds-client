@@ -1,4 +1,4 @@
-import 'babel-polyfill';
+import 'idempotent-babel-polyfill';
 import deepstream from 'deepstream.io-client-js';
 import merge from 'lodash.merge';
 import mergeWith from 'lodash.mergewith';
