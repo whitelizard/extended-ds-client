@@ -278,10 +278,6 @@ function deleteDatasetRecord(listPath, recordId) {
 //   return this.event.subscribe(name, callback);
 // }
 
-function getObservable(name) {
-  Observable.create(observer => {});
-}
-
 export function polyfill(obj, key, value) {
   if (typeof obj[key] === 'undefined') {
     // eslint-disable-next-line
@@ -321,8 +317,6 @@ export default function getClient(url, options) {
   pf(c.record, 'updateExistingRecordP', updateExistingRecord.bind(c));
   pf(c.record, 'getDatasetRecordP', getDatasetRecord.bind(c));
   pf(c.record, 'deleteDatasetRecordP', deleteDatasetRecord.bind(c));
-
-  pf(c.event, 'o', getObservable.bind(c));
 
   // pf(c.event, 'subIfNot', subIfNot.bind(c));
 
