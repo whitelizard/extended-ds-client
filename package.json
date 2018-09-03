@@ -4,10 +4,9 @@
   "description": "Promise based additional methods on the deepstream js client (polyfilled)",
   "main": "index.js",
   "scripts": {
-    "test": "npm run babel-node ./test/index.js",
-    "babel-node": "./node_modules/.bin/babel-node",
+    "old-test": "npx babel-node ./test/index.js",
     "build": "babel src -o index.js",
-    "compiled-test": "babel src -o compiled-test/src/index.js && babel test/index.js -o compiled-test/test/index.js"
+    "test": "babel src -o compiled-test/src/index.js && babel test/index.js -o compiled-test/test/index.js && node compiled-test/test/index.js"
   },
   "repository": {
     "type": "git",
@@ -21,18 +20,17 @@
   "homepage": "https://github.com/whitelizard/extended-ds-client#readme",
   "dependencies": {
     "deepstream.io-client-js": "^2.3.0",
-    "idempotent-babel-polyfill": "^6.26.0",
     "lodash.isobject": "^3.0.2",
     "lodash.merge": "^4.6.0",
     "lodash.mergewith": "^4.6.0"
   },
   "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-core": "^6.26.3",
+    "idempotent-babel-polyfill": "^6.26.0",
+    "@babel/cli": "^7.0.0",
+    "@babel/core": "^7.0.0",
+    "@babel/preset-env": "^7.0.0",
     "babel-eslint": "^8.2.3",
     "babel-plugin-transform-class-properties": "^6.24.1",
-    "babel-plugin-transform-object-rest-spread": "^6.26.0",
-    "babel-preset-env": "^1.7.0",
     "blue-tape": "^1.0.0",
     "deepstream.io": "^3.1.2",
     "eslint": "^4.19.1",
