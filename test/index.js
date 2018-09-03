@@ -1,8 +1,29 @@
+import { EventEmitter } from 'events';
 import test from 'blue-tape';
 import Deepstream from 'deepstream.io';
 import getClient, { addEntry, polyfill, CONSTANTS, MERGE_STRATEGIES } from '../src/index';
 
+// Custom PermissionHandler
+export default class PermissionHandler extends EventEmitter {
+  constructor() {
+    super();
+    this.isReady = true;
+  }
+
+  canPerformAction(id, request, callback) {
+    console.log('canPerformAction', request.topic, '/', request.action);
+    const result = this.validateAccess().then(() => callback(null, result));
+  }
+
+  /* eslint-disable class-methods-use-this */
+  validateAccess() {
+    return new Promise(r => r(true));
+  }
+  /* eslint-enable class-methods-use-this */
+}
+
 const server = new Deepstream();
+server.set('permissionHandler', new PermissionHandler());
 server.start();
 
 const c = getClient('localhost:6020');
@@ -42,17 +63,26 @@ test('p.login', async t => {
 test('p.login fail', t => t.shouldFail(c.p.login('record2')));
 
 test('provide', t => {
-  c.rpc.provide('rpc1', (err, res) => res.send(5));
+  c.rpc.provide('rpc1', (data, res) => res.send(data));
   t.end();
 });
 
 test('p.make', async t => {
-  const res = await c.rpc.p.make('rpc1');
+  const res = await c.rpc.p.make('rpc1', 5);
   t.ok(res === 5);
 });
 test('makeP', async t => {
-  const res = await c.rpc.makeP('rpc1');
+  const res = await c.rpc.makeP('rpc1', 5);
   t.ok(res === 5);
+});
+test('p.make - repeat', async t => {
+  const res = [];
+  res.push(await c.rpc.p.make('rpc1', 'data'));
+  res.push(await c.rpc.p.make('rpc1', 'data'));
+  res.push(await c.rpc.p.make('rpc1', 'data'));
+  res.push(await c.rpc.p.make('rpc1', 'data'));
+  res.push(await c.rpc.p.make('rpc1', 'data'));
+  t.equals(res.length, 5);
 });
 test('p.make fail', t => t.shouldFail(c.rpc.p.make(44)));
 
