@@ -12,7 +12,7 @@ export default class PermissionHandler extends EventEmitter {
 
   canPerformAction(id, request, callback) {
     console.log('canPerformAction', request.topic, '/', request.action);
-    const result = this.validateAccess().then(() => callback(null, result));
+    this.validateAccess().then(result => callback(null, result));
   }
 
   /* eslint-disable class-methods-use-this */
