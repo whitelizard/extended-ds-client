@@ -6,7 +6,8 @@
   "scripts": {
     "test": "npm run babel-node ./test/index.js",
     "babel-node": "./node_modules/.bin/babel-node",
-    "build": "babel src -o index.js"
+    "build": "babel src -o index.js",
+    "compiled-test": "babel src -o compiled-test/src/index.js && babel test/index.js -o compiled-test/test/index.js"
   },
   "repository": {
     "type": "git",
@@ -27,16 +28,16 @@
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
-    "babel-core": "^6.26.0",
+    "babel-core": "^6.26.3",
     "babel-eslint": "^8.2.3",
     "babel-plugin-transform-class-properties": "^6.24.1",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
-    "babel-preset-env": "^1.6.1",
+    "babel-preset-env": "^1.7.0",
     "blue-tape": "^1.0.0",
-    "deepstream.io": "^3.0.0",
+    "deepstream.io": "^3.1.2",
     "eslint": "^4.19.1",
     "eslint-config-airbnb-base": "^12.1.0",
-    "eslint-plugin-import": "^2.9.0",
+    "eslint-plugin-import": "^2.14.0",
     "eslint-plugin-node": "^6.0.1"
   }
 }
