@@ -6,7 +6,9 @@
   "scripts": {
     "old-test": "npx babel-node ./test/index.js",
     "build": "babel src -o index.js",
-    "test": "babel src -o compiled-test/src/index.js && babel test/index.js -o compiled-test/test/index.js && node compiled-test/test/index.js"
+    "test": "babel src -o compiled-test/src/index.js && babel test/index.js -o compiled-test/test/index.js && node compiled-test/test/index.js",
+    "test-server": "babel test/server.js -o compiled-test/test/server.js && node compiled-test/test/server.js",
+    "test-client": "babel src -o compiled-test/src/index.js && babel test/client.js -o compiled-test/test/client.js && node compiled-test/test/client.js"
   },
   "repository": {
     "type": "git",
