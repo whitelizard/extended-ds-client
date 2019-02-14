@@ -1,7 +1,7 @@
 import test from 'blue-tape';
 import getClient, { addEntry, polyfill, CONSTANTS, MERGE_STRATEGIES } from '../src/index';
 
-const serverAdress = 'localhost:6020';
+const serverAdress = '10.2.65.75:6020';
 
 const c = getClient(serverAdress);
 const cc = getClient(serverAdress, {

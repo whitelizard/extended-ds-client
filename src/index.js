@@ -19,6 +19,7 @@ export function addEntry(list, str) {
   return list.addEntry(str);
 }
 
+/* eslint-disable implicit-arrow-linebreak */
 function loginP(authParams) {
   return new Promise((resolve, reject) =>
     this.login(authParams, (success, data) => {
@@ -66,6 +67,7 @@ function makeP(name, data) {
       else reject(new Error(error));
     }));
 }
+/* eslint-enable implicit-arrow-linebreak */
 
 function getExistingP(type, pathStr) {
   return this.record.hasP(pathStr).then(() => this.record[`get${type}P`](pathStr));
@@ -225,11 +227,11 @@ function _$updateRecordDeep(name, obj, mode = 'deep', lockedKeys = []) {
 function _$updateRecord(name, obj, mode = 'shallow', lockedKeys = [], protectedKeys = []) {
   if (!Object.keys(updateModes).includes(mode)) throw new TypeError('Unsupported mode');
   lockedKeys.push(this.datasetRecordIdKey);
-  if (mode === 'shallow') {
-    return this.record._$updateRecordShallowP(name, obj, lockedKeys);
-  } else if (mode === 'overwrite') {
+  if (mode === 'shallow') return this.record._$updateRecordShallowP(name, obj, lockedKeys);
+  if (mode === 'overwrite') {
     return this.record._$updateRecordOverwriteP(name, obj, lockedKeys, protectedKeys);
-  } else if (mode === 'removeKeys') {
+  }
+  if (mode === 'removeKeys') {
     return this.record._$updateRecordRemoveKeysP(name, obj, lockedKeys, protectedKeys);
   }
   return this.record._$updateRecordDeepP(name, obj, mode, lockedKeys);
@@ -250,7 +252,8 @@ function updateExistingRecord(
 function getDatasetRecord(listPath, recordId, initiation = {}) {
   const id = recordId || this.getUid();
   const rPath = `${listPath}${this.splitChar}${id}`;
-  return Promise.all([this.record.getListP(listPath), this.record.getRecordP(rPath)]).then(([l, r]) => {
+  const promises = [this.record.getListP(listPath), this.record.getRecordP(rPath)];
+  return Promise.all(promises).then(([l, r]) => {
     // Update list:
     if (this.datasetRecordFullPaths) addEntry(l, rPath);
     else addEntry(l, id);
@@ -285,14 +288,14 @@ export function polyfill(obj, key, value) {
   }
 }
 
+const valueOr = (otherwise, key, obj) => (obj && obj[key] !== undefined ? obj[key] : otherwise);
+
 export default function getClient(url, options) {
   const c = deepstream(url, options);
 
-  c.splitChar = options && options.splitChar !== undefined ? options.splitChar : '/';
-  c.datasetRecordFullPaths =
-    options && options.datasetRecordFullPaths !== undefined ? options.datasetRecordFullPaths : true;
-  c.datasetRecordIdKey =
-    options && options.datasetRecordIdKey !== undefined ? options.datasetRecordIdKey : 'id';
+  c.splitChar = valueOr('/', 'splitChar', options);
+  c.datasetRecordFullPaths = valueOr(true, 'datasetRecordFullPaths', options);
+  c.datasetRecordIdKey = valueOr('id', 'datasetRecordIdKey', options);
 
   const pf = polyfill;
   pf(c, 'loginP', loginP.bind(c));

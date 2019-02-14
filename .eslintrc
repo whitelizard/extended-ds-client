@@ -1,19 +1,23 @@
 {
+  # https://prettier.io/docs/en/eslint.html
   "parser": "babel-eslint",
-  "extends": "airbnb-base",
+  "extends": ["prettier"],
+  # "extends": ["plugin:prettier/recommended"],
+  # "plugins": ["prettier"],
 
-  "rules": {
-    "no-restricted-syntax": [0],
-    "no-mixed-operators": [0],
-    "no-underscore-dangle": [0],
-    "no-param-reassign": [0],
-    "arrow-parens": [2, "as-needed"],
-    "import/prefer-default-export": [0]
-  },
+  # "rules": {
+    # "no-restricted-syntax": [0],
+    # "no-mixed-operators": [0],
+    # "no-underscore-dangle": [0],
+    # "no-param-reassign": [0],
+    # "arrow-parens": [2, "as-needed"],
+    # "import/prefer-default-export": [0],
+    # "prettier/prettier": "error"
+  # },
 
-  "parserOptions": {
-    "ecmaFeatures": {
-      "experimentalObjectRestSpread": true
-    }
-  }
+  # "parserOptions": {
+  #   "ecmaFeatures": {
+  #     "experimentalObjectRestSpread": true
+  #   }
+  # }
 }

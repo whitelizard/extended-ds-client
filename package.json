@@ -22,22 +22,25 @@
   "homepage": "https://github.com/whitelizard/extended-ds-client#readme",
   "dependencies": {
     "deepstream.io-client-js": "^2.3.0",
+    "idempotent-babel-polyfill": "=6.26.0-1",
     "lodash.isobject": "^3.0.2",
     "lodash.merge": "^4.6.0",
     "lodash.mergewith": "^4.6.0"
   },
   "devDependencies": {
-    "idempotent-babel-polyfill": "^6.26.0",
     "@babel/cli": "^7.0.0",
     "@babel/core": "^7.0.0",
     "@babel/preset-env": "^7.0.0",
-    "babel-eslint": "^8.2.3",
+    "babel-eslint": "^9.0.0",
     "babel-plugin-transform-class-properties": "^6.24.1",
     "blue-tape": "^1.0.0",
     "deepstream.io": "^3.1.2",
-    "eslint": "^4.19.1",
-    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint": "^5.5.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-config-prettier": "^3.0.1",
     "eslint-plugin-import": "^2.14.0",
-    "eslint-plugin-node": "^6.0.1"
+    "eslint-plugin-node": "^7.0.1",
+    "eslint-plugin-prettier": "^2.6.2",
+    "prettier": "1.14.2"
   }
 }
